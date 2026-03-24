@@ -19,13 +19,13 @@
 
         /* --- FOOTER AT BOTTOM LOGIC --- */
         html, body {
-            height: 100%; /* Required for the flex-grow to work */
+            height: 100%; 
             margin: 0;
         }
 
         body {
             display: flex;
-            flex-direction: column; /* Stack header, main, footer vertically */
+            flex-direction: column; 
             background-color: var(--coconut-white);
             color: var(--jungle-green);
             font-family: 'Cormorant Garamond', serif;
@@ -33,11 +33,11 @@
         }
 
         main {
-            flex: 1 0 auto; /* This tells the main content to grow and fill all available space */
+            flex: 1 0 auto; 
         }
 
         footer {
-            flex-shrink: 0; /* Ensures the footer doesn't squash */
+            flex-shrink: 0; 
         }
 
         /* --- Typography & Buttons (Preserved) --- */
@@ -68,12 +68,13 @@
             display: inline-block;
             text-decoration: none;
         }
-
-        .btn-dayunan:hover {
-            background-color: transparent !important;
-            color: var(--jungle-green) !important;
-            letter-spacing: 0.35rem;
-        }
+.btn-dayunan:hover {
+        background-color: #C04000 !important;
+        border-color: #C04000 !important;
+        color: white !important;
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 12px rgba(192, 64, 0, 0.3); 
+    }
     </style>
 </head>
 <body class="{{ Request::is('/') ? 'is-home' : 'is-inner' }}">
