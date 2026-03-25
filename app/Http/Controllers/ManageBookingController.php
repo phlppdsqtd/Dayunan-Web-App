@@ -13,7 +13,10 @@ class ManageBookingController extends Controller
     {
         if (Auth::check()) {
             $user = Auth::user();
-            $bookings = Booking::where('user_id', $user->id)
+            
+            // Added with('package') to pull the package details (title, description, etc.)
+            $bookings = Booking::with('package')
+                                ->where('user_id', $user->id)
                                 ->orderBy('check_in', 'desc')
                                 ->get();
 
@@ -40,7 +43,9 @@ class ManageBookingController extends Controller
             return back()->with('error', 'We couldn\'t find any records associated with that email.');
         }
 
-        $bookings = Booking::where('user_id', $user->id)
+        // Added with('package') here as well for the guest search
+        $bookings = Booking::with('package')
+                            ->where('user_id', $user->id)
                             ->orderBy('check_in', 'desc')
                             ->get();
 

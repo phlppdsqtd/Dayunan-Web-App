@@ -12,7 +12,7 @@
                 <div class="glass-card animate-in">
                     <div class="text-center mb-5">
                         <span class="text-terracotta khula fw-bold d-block mb-2" style="letter-spacing: 0.5rem; font-size: 0.6rem;">PRIVATE ACCESS</span>
-                        <h1 class="tenor-sans mb-3 text-jungle" style="font-size: 1.6rem; letter-spacing: 0.3rem;">Welcome</h1>
+                        <h1 class="tenor-sans mb-3 text-jungle" style="font-size: 1.6rem; letter-spacing: 0.3rem;">Welcome Back</h1>
                         <div class="mx-auto" style="width: 40px; height: 1px; background: var(--sandstorm-beige); opacity: 0.5;"></div>
                     </div>
 

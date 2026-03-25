@@ -19,7 +19,7 @@
         </h1>
 
         <p class="khula mb-5 mx-auto opacity-75 animate-fade-in-delayed" style="max-width: 500px; text-transform: none; letter-spacing: 0.05rem;">
-            A grounded sanctuary designed for quiet mornings and shared celebrations.
+            A grounded sanctuary designed for quiet relaxation and shared celebrations.
         </p>
 
         <div class="d-flex justify-content-center gap-3 animate-fade-in-delayed">
@@ -43,9 +43,8 @@
                 
                 <div class="staircase-box step-1">
                     <div class="box-inner">
-                        <img src="{{ asset('images/d1.jpg') }}" alt="Entrance" class="zoom-img">
+                        <img src="{{ asset('images/1.jpg') }}" alt="Entrance" class="zoom-img">
                         <div class="inner-hover-text">
-                            <span class="tiny-num">01</span>
                             <h6 class="tenor-sans text-white m-0">THE ARRIVAL</h6>
                         </div>
                     </div>
@@ -53,9 +52,8 @@
 
                 <div class="staircase-box step-2 shadow-lg">
                     <div class="box-inner">
-                        <img src="{{ asset('images/d2.jpg') }}" alt="Detail" class="zoom-img">
+                        <img src="{{ asset('images/2.jpg') }}" alt="Detail" class="zoom-img">
                         <div class="inner-hover-text">
-                            <span class="tiny-num">02</span>
                             <h6 class="tenor-sans text-white m-0">QUIET CORNERS</h6>
                         </div>
                     </div>
@@ -63,9 +61,8 @@
 
                 <div class="staircase-box step-3 shadow-lg">
                     <div class="box-inner">
-                        <img src="{{ asset('images/d3.jpg') }}" alt="Texture" class="zoom-img">
+                        <img src="{{ asset('images/3.jpg') }}" alt="Texture" class="zoom-img">
                         <div class="inner-hover-text">
-                            <span class="tiny-num">03</span>
                             <h6 class="tenor-sans text-white m-0">NATURAL SOUL</h6>
                         </div>
                     </div>
@@ -73,9 +70,8 @@
 
                 <div class="staircase-box step-4 shadow-lg">
                     <div class="box-inner">
-                        <img src="{{ asset('images/1.jpg') }}" alt="The Villa" class="zoom-img">
+                        <img src="{{ asset('images/4.jpg') }}" alt="The Villa" class="zoom-img">
                         <div class="inner-hover-text">
-                            <span class="tiny-num">04</span>
                             <h6 class="tenor-sans text-white m-0">SHARED SPACES</h6>
                         </div>
                     </div>
@@ -83,9 +79,8 @@
 
                 <div class="staircase-box step-5 shadow-sm">
                     <div class="box-inner">
-                        <img src="{{ asset('images/2.jpg') }}" alt="Light" class="zoom-img">
+                        <img src="{{ asset('images/5.jpg') }}" alt="Light" class="zoom-img">
                         <div class="inner-hover-text">
-                            <span class="tiny-num">05</span>
                             <h6 class="tenor-sans text-white m-0">GOLDEN HOUR</h6>
                         </div>
                     </div>
@@ -96,18 +91,29 @@
 
         <div class="col-lg-4 offset-lg-1">
             <div class="gallery-story">
-                <span class="text-terracotta khula fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem;">THE EXPERIENCE</span>
-                <h2 class="tenor-sans mb-4" style="color: #3A5F41; font-size: 2.8rem; line-height: 1.1;">Grounded <br>Sanctuary.</h2>
+                <span class="text-terracotta khula fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem;">
+                    THE EXPERIENCE
+                </span>
+
+                <h2 class="tenor-sans mb-4" style="color: #3A5F41; font-size: 2.8rem; line-height: 1.1;">
+                    A Place to Pause and Breathe.
+                </h2>
                 
                 <div class="phrase-list mt-5">
                     <div class="mb-4 pb-3 border-bottom border-light">
-                        <p class="khula text-muted mb-0">"Where the journey to stillness begins, capturing the soft morning light of Bacolod."</p>
+                        <p class="khula text-muted mb-0">
+                            Step inside and settle into a space made for rest, quiet work, and easy moments.
+                        </p>
                     </div>
                     <div class="mb-4 pb-3 border-bottom border-light">
-                        <p class="khula text-muted mb-0">Designed for those who seek rest in the details and celebrations that linger.</p>
+                        <p class="khula text-muted mb-0">
+                            Spend your day by the pool, gather with friends, or simply take your time.
+                        </p>
                     </div>
                     <div>
-                        <p class="khula text-muted mb-0">Every texture tells a story of home, refined by the warmth of the evening sun.</p>
+                        <p class="khula text-muted mb-0">
+                            Everything is set so you can arrive, unwind, and feel at ease.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -190,7 +196,7 @@
     }
 
     .staircase-box:hover .zoom-img {
-        filter: brightness(0.4); 
+        filter: brightness(0.8); 
         transform: scale(1.1);
     }
 
@@ -203,7 +209,7 @@
     /* --- HERO STYLING (Same as before) --- */
     .hero-parallax {
         height: 100vh;
-        background-image: url("{{ asset('images/505854273_122101605782901962_1827962554700351857_n.jpg') }}"); 
+        background-image: url("{{ asset('images/home.jpg') }}"); 
         background-size: cover;
         background-position: center;
         background-attachment: fixed;

@@ -11,7 +11,7 @@
             <div class="col-md-4 text-center d-none d-md-block">
                 <div style="width: 30px; height: 1px; background: var(--sandstorm-beige); margin: 0 auto 10px;"></div>
                 <p class="khula text-muted mb-0" style="font-size: 0.6rem; opacity: 0.7; letter-spacing: 0.1rem; text-transform: uppercase;">
-                    &copy; {{ date('Y') }} — Dayunan
+                    &copy; {{ date('Y') }} Dayunan
                 </p>
             </div>
 

@@ -18,8 +18,8 @@
                         <div class="booking-list text-start mt-4">
                             @foreach($bookings as $booking)
                                 <div class="py-4 border-bottom border-light row-hover-effect">
+                                    
                                     <div class="row align-items-center">
-                                        
                                         <div class="col-md-5 mb-3 mb-md-0">
                                             <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
                                             <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1.1rem; letter-spacing: 0.1rem;">
@@ -46,6 +46,16 @@
                                             </p>
                                         </div>
                                     </div>
+
+                                    <div class="mt-3 pt-3 border-top" style="border-color: rgba(216, 202, 184, 0.2) !important;">
+                                        <p class="tenor-sans text-terracotta mb-1" style="font-size: 0.9rem; font-weight: 600;">
+                                            {{ $booking->package->title ?? 'Package Unavailable' }}
+                                        </p>
+                                        @if($booking->package && $booking->package->description)
+                                            <p class="khula text-muted mb-0" style="font-size: 0.75rem; white-space: pre-line; line-height: 1.4;">{{ $booking->package->description }}</p>
+                                        @endif
+                                    </div>
+
                                 </div>
                             @endforeach
                         </div>
@@ -53,7 +63,7 @@
                         <div class="py-5">
                             <i class="bi bi-calendar-x text-muted opacity-25 display-4 mb-3 d-block"></i>
                             <p class="cormorant fst-italic text-muted" style="font-size: 1.2rem;">You haven't booked a stay with us yet.</p>
-                            <a href="{{ url('/book') }}" class="btn btn-dayunan mt-3">Start Your Bookings</a>
+                            <a href="{{ url('/book') }}" class="btn btn-dayunan mt-3">Reserve Your Stay</a>
                         </div>
                     @endif
 

@@ -4,54 +4,27 @@
 <div class="manage-page-wrapper d-flex align-items-center justify-content-center py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-10 col-lg-7">
+            <div class="col-md-8 col-lg-6"> 
                 
-                <div class="contact-card p-5 shadow-lg animate-fade-up">
+                <div class="contact-card p-5 shadow-lg animate-fade-up text-center">
                     
-                    @guest
-                        <div class="text-center">
-                            <span class="khula text-terracotta d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem;">RETRIEVE STAY</span>
-                            <h2 class="tenor-sans mb-5 text-jungle">Manage your journey.</h2>
-                            
-                            <form action="{{ route('manage.search') }}" method="POST" class="mt-4 px-lg-4">
-                                @csrf
-                                <div class="mb-5">
-                                    <input type="email" name="email" 
-                                           class="form-control aesthetic-input text-center py-3" 
-                                           placeholder="Enter your registered email" required>
-                                </div>
-                                <button type="submit" class="btn btn-dayunan w-100 py-3 tenor-sans">Search Records</button>
-                            </form>
-                        </div>
-                    @endguest
+                    <section class="mb-4">
+                        <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem;">RETRIEVE STAY</span>
+                        <h2 class="tenor-sans text-jungle display-6 mb-0">Manage your stay.</h2>
+                        <div class="mx-auto mt-4 accent-line"></div>
+                    </section>
 
-                    @auth
-                        <div class="text-center mb-5">
-                            <span class="khula text-terracotta d-block mb-2" style="letter-spacing: 0.3rem; font-size: 0.7rem;">WELCOME BACK</span>
-                            <h2 class="tenor-sans text-jungle">{{ auth()->user()->name }}</h2>
-                            <div class="mx-auto mt-3 accent-line"></div>
+                    <form action="{{ route('manage.search') }}" method="POST" class="mt-5 px-lg-3">
+                        @csrf
+                        <div class="mb-4 text-start">
+                            <label for="email" class="khula fw-bold text-muted mb-2" style="font-size: 0.7rem; letter-spacing: 0.1rem;">REGISTERED EMAIL</label>
+                            <input type="email" name="email" id="email"
+                                   class="form-control text-center py-3 khula" 
+                                   style="border-radius: 0; border: 1px solid rgba(216, 202, 184, 0.8); background-color: rgba(255, 255, 255, 0.9);"
+                                   placeholder="Enter your email address" required>
                         </div>
-
-                        @if($bookings->count() > 0)
-                            <div class="booking-list mt-4 text-start">
-                                @foreach($bookings as $booking)
-                                    <div class="p-4 border-bottom border-light d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <p class="khula mb-0 fw-bold text-jungle" style="font-size: 0.8rem;">BOOKING #{{ $booking->id }}</p>
-                                            <p class="cormorant text-muted mb-0">{{ $booking->check_in }} — {{ $booking->check_out }}</p>
-                                        </div>
-                                        <a href="#" class="btn btn-sm btn-outline-dark khula" style="font-size: 0.6rem;">Details</a>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="py-5 text-center">
-                                <i class="bi bi-calendar-x text-muted opacity-25 display-4 mb-3 d-block"></i>
-                                <p class="cormorant fst-italic text-muted" style="font-size: 1.2rem;">You haven't booked a stay with us yet.</p>
-                                <a href="{{ url('/book') }}" class="btn btn-dayunan mt-3">Start Your Journey</a>
-                            </div>
-                        @endif
-                    @endauth
+                        <button type="submit" class="btn btn-dayunan w-100 py-3 tenor-sans mt-2" style="letter-spacing: 0.1rem;">Search Records</button>
+                    </form>
 
                 </div>
             </div>
@@ -60,14 +33,45 @@
 </div>
 
 <style>
-    /* Matches your Contact Page aesthetic */
-    .aesthetic-input {
-        border: none;
-        border-bottom: 1px solid var(--sandstorm-beige);
-        background: transparent;
-        border-radius: 0;
-        font-family: 'Khula', sans-serif;
+    /* --- Core Layout CSS --- */
+    .manage-page-wrapper {
+        min-height: 85vh;
+        background-color: var(--coconut-white);
     }
-    .accent-line { width: 40px; height: 1px; background-color: var(--terracotta); }
+
+    .contact-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(216, 202, 184, 0.4);
+        border-radius: 0;
+    }
+
+    .accent-line {
+        width: 40px;
+        height: 1px;
+        background-color: var(--terracotta);
+    }
+
+    /* --- Typography --- */
+    .tenor-sans { font-family: 'Tenor Sans', sans-serif; text-transform: uppercase; }
+    .khula { font-family: 'Khula', sans-serif; }
+
+    /* --- Animations --- */
+    .animate-fade-up {
+        animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-letter-spacing {
+        animation: letterSpace 2s ease forwards;
+    }
+    @keyframes letterSpace {
+        from { letter-spacing: 0.1rem; opacity: 0; }
+        to { letter-spacing: 0.4rem; opacity: 1; }
+    }
 </style>
 @endsection

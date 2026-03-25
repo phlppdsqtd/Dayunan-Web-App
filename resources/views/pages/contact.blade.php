@@ -10,7 +10,7 @@
                     
                     <section class="mb-5">
                         <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem;">CONNECT</span>
-                        <h2 class="tenor-sans text-jungle display-5 mb-0">A personal touch.</h2>
+                        <h2 class="tenor-sans text-jungle display-5 mb-0">Let's plan your stay.</h2>
                         <div class="mx-auto mt-4 accent-line"></div>
                     </section>
 
@@ -45,13 +45,10 @@
                     @endif
 
                     <div class="mt-4 pt-4 border-top border-light">
-                        <p class="khula small text-muted mb-4" style="letter-spacing: 0.15rem; font-size: 0.65rem;">FOR IMMEDIATE ASSISTANCE</p>
+                        <p class="khula small text-muted mb-4" style="letter-spacing: 0.15rem; font-size: 0.65rem;">FOR FURTHER ASSISTANCE</p>
                         <div class="d-flex flex-wrap justify-content-center gap-3">
-                            <a href="https://m.me/dayunan.bcd" target="_blank" class="btn btn-dayunan-outline px-4 py-3 tenor-sans">
-                                Messenger
-                            </a>
                             <a href="https://www.facebook.com/dayunan.bcd" target="_blank" class="btn btn-dayunan-outline px-4 py-3 tenor-sans">
-                                Facebook
+                                Facebook Messenger
                             </a>
                         </div>
                     </div>
