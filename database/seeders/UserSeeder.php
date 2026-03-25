@@ -28,5 +28,13 @@ class UserSeeder extends Seeder
             'role' => 'customer',
             'mobile' => '09181234567',
         ]);
+
+         User::create([
+            'name' => 'Josiah Nalaunan',
+            'email' => 'josiah@gmail.com',
+            'password' => Hash::make('josiah123'),
+            'role' => 'customer',
+            'mobile' => '09638808931',
+        ]);
     }
 }

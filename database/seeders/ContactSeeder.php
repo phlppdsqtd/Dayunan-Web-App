@@ -2,26 +2,29 @@
 
 namespace Database\Seeders;
 
-use App\Models\Contact;
 use Illuminate\Database\Seeder;
+use App\Models\Contact;
 
 class ContactSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        Contact::truncate();
+
         Contact::create([
-            'name' => 'Dayúnan Concierge',
-            'email' => 'hello@dayunan.com',
-            'number' => '09170000000',
+            'name' => 'James',
+            'role' => 'Front Desk',
+            'staff_type' => 'Staff',
+            'contact_number' => '09639595724',
+            'email' => 'james@dayunan.com',
         ]);
 
         Contact::create([
-            'name' => 'Events Team',
-            'email' => 'events@dayunan.com',
-            'number' => '09171111111',
+            'name' => 'Jan',
+            'role' => 'Admin',
+            'staff_type' => 'Staff',
+            'contact_number' => '09620560173',
+            'email' => 'jan@dayunan.com',
         ]);
     }
 }

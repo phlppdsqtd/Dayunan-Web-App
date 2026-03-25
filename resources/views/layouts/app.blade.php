@@ -7,9 +7,6 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Khula:wght@300;400;700&family=Tenor+Sans&display=swap" rel="stylesheet">
 
     <style>
@@ -18,93 +15,77 @@
             --jungle-green: #3A5F41;
             --sandstorm-beige: #D8CAB8;
             --terracotta: #C26B4E;
-            --soft-bronze: #B08D57;
+        }
+
+        /* --- FOOTER AT BOTTOM LOGIC --- */
+        html, body {
+            height: 100%; 
+            margin: 0;
         }
 
         body {
+            display: flex;
+            flex-direction: column; 
             background-color: var(--coconut-white);
             color: var(--jungle-green);
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.1rem;
-            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Typography */
-        h1, h2, h3, h4, .tenor-sans {
+        main {
+            flex: 1 0 auto; 
+        }
+
+        footer {
+            flex-shrink: 0; 
+        }
+
+        /* --- Typography & Buttons (Preserved) --- */
+        h1, h2, h3, .tenor-sans {
             font-family: 'Tenor Sans', sans-serif;
             text-transform: uppercase;
-            letter-spacing: 0.1rem;
+            letter-spacing: 0.25rem;
         }
 
-        label, .btn, .khula, .nav-link {
+        .khula {
             font-family: 'Khula', sans-serif;
             text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05rem;
-        }
-
-        /* Elements */
-        .navbar {
-            background-color: var(--coconut-white);
-            border-bottom: 1px solid var(--sandstorm-beige);
-            padding: 1.5rem 0;
-        }
-
-        .navbar-brand {
-            font-family: 'Tenor Sans', sans-serif;
-            font-size: 1.5rem;
-            color: var(--jungle-green) !important;
-        }
-
-        .card-minimal {
-            background: #ffffff;
-            border: 1px solid var(--sandstorm-beige);
-            border-radius: 0px; 
-            transition: all 0.4s ease;
-        }
-
-        .card-minimal:hover {
-            border-color: var(--soft-bronze);
+            letter-spacing: 0.15rem;
+            font-size: 0.7rem;
         }
 
         .btn-dayunan {
-            background-color: var(--jungle-green);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            transition: background-color 0.3s ease;
+            background-color: var(--jungle-green) !important;
+            color: white !important;
+            border: 1px solid var(--jungle-green) !important;
+            padding: 14px 35px;
+            border-radius: 0;
+            font-family: 'Khula', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.25rem;
+            transition: all 0.4s ease;
+            display: inline-block;
+            text-decoration: none;
         }
-
-        .btn-dayunan:hover {
-            background-color: var(--soft-bronze);
-            color: white;
-        }
-
-        .btn-outline-dayunan {
-            border: 1px solid var(--terracotta);
-            color: var(--terracotta);
-            padding: 12px 30px;
-            background: transparent;
-        }
-
-        .btn-outline-dayunan:hover {
-            background-color: var(--terracotta);
-            color: white;
-        }
-
-        .text-terracotta { color: var(--terracotta); }
-        .text-jungle { color: var(--jungle-green); }
+.btn-dayunan:hover {
+        background-color: #C04000 !important;
+        border-color: #C04000 !important;
+        color: white !important;
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 12px rgba(192, 64, 0, 0.3); 
+    }
     </style>
 </head>
-<body>
-
+<body class="{{ Request::is('/') ? 'is-home' : 'is-inner' }}">
+    
     @include('layouts.navbar')
 
-    <main class="py-5">
-        <div class="container">
-            @yield('content') 
-        </div>
+    <main style="{{ Request::is('/') ? '' : 'padding-top: 100px;' }}">
+        @yield('content')
     </main>
+
+    @include('layouts.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
