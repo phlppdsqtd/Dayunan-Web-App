@@ -55,11 +55,11 @@ class BookingSeeder extends Seeder
         $checkOut4 = Carbon::now()->subDays(4);
         Booking::create([
             'user_id' => 3, 
-            'package_id' => 6, 
+            'package_id' => 4, 
             'check_in' => $checkIn4->toDateString(),
             'check_out' => $checkOut4->toDateString(),
             'status' => 'approved',
-            'total_price' => $this->calculatePrice(6, $checkIn4, $checkOut4),
+            'total_price' => $this->calculatePrice(4, $checkIn4, $checkOut4),
         ]);
 
         // 5. josiah sample 2
@@ -71,7 +71,7 @@ class BookingSeeder extends Seeder
             'check_in' => $checkIn5->toDateString(),
             'check_out' => $checkOut5->toDateString(),
             'status' => 'pending',
-            'total_price' => $this->calculatePrice(1, $checkIn4, $checkOut4),
+            'total_price' => $this->calculatePrice(1, $checkIn5, $checkOut5),
         ]);
     }
 
