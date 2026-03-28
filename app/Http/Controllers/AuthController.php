@@ -31,6 +31,37 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
+    public function showAdminLogin()
+    {
+        return view('pages.admin-login');
+    }
+
+    public function adminLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+
+            if (Auth::user()->role !== 'admin') {
+                Auth::logout();
+
+                return back()->withErrors([
+                    'email' => 'This account is not authorized as admin.',
+                ])->onlyInput('email');
+            }
+
+            return redirect()->route('explore');
+        }
+
+        return back()->withErrors([
+            'email' => 'Invalid admin credentials.',
+        ])->onlyInput('email');
+    }
+
     public function showSignup()
     {
         return view('pages.signup');
@@ -50,7 +81,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'mobile' => $request->mobile,
-            'role' => 'customer', 
+            'role' => 'customer',
         ]);
 
         Auth::login($user);
