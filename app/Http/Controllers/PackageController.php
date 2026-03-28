@@ -12,9 +12,11 @@ class PackageController extends Controller
     public function explore()
     {
         if (Auth::check() && Auth::user()->role === 'admin') {
-            $packages = Package::latest()->get();
+            $packages = Package::orderBy('price', 'asc')->get();
         } else {
-            $packages = Package::where('is_active', true)->latest()->get();
+            $packages = Package::where('is_active', true)
+                               ->orderBy('price', 'asc')
+                               ->get();
         }
 
         return view('pages.explore', compact('packages'));
