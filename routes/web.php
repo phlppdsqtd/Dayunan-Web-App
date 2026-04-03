@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ManageBookingController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\GalleryController;
 
 Route::get('/', function () {
     return view('pages.home');
@@ -39,4 +40,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/packages', [PackageController::class, 'store'])->name('packages.store');
     Route::put('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
     Route::delete('/packages/{package}', [PackageController::class, 'destroy'])->name('packages.destroy');
+});
+
+// Gallery Routes for Admin
+Route::middleware('auth')->group(function () {
+    Route::post('/packages', [PackageController::class, 'store'])->name('packages.store');
+    Route::put('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
+    Route::delete('/packages/{package}', [PackageController::class, 'destroy'])->name('packages.destroy');
+
+    Route::post('/galleries', [GalleryController::class, 'store'])->name('galleries.store');
+    Route::put('/galleries/{gallery}', [GalleryController::class, 'update'])->name('galleries.update');
+    Route::post('/galleries/{gallery}/image', [GalleryController::class, 'addImage'])->name('galleries.addImage');
+    Route::delete('/gallery-image/{image}', [GalleryController::class, 'deleteImage'])->name('galleries.deleteImage');
+    Route::delete('/galleries/{gallery}', [GalleryController::class, 'destroy'])->name('galleries.destroy');
 });

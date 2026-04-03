@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
+use App\Models\Gallery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -12,12 +13,16 @@ class PackageController extends Controller
     public function explore()
     {
         if (Auth::check() && Auth::user()->role === 'admin') {
-            $packages = Package::latest()->get();
+            $packages = Package::orderBy('price', 'asc')->get();
         } else {
-            $packages = Package::where('is_active', true)->latest()->get();
+            $packages = Package::where('is_active', true)
+                               ->orderBy('price', 'asc')
+                               ->get();
         }
 
-        return view('pages.explore', compact('packages'));
+        $galleries = Gallery::with('images')->get();
+
+        return view('pages.explore', compact('packages', 'galleries'));
     }
 
     public function store(Request $request)
