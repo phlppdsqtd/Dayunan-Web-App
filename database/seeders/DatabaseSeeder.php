@@ -7,6 +7,7 @@ use Database\Seeders\UserSeeder;
 use Database\Seeders\PackageSeeder;
 use Database\Seeders\ContactSeeder;
 use Database\Seeders\BookingSeeder;
+use Database\Seeders\GallerySeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             PackageSeeder::class,
+            GallerySeeder::class,
             ContactSeeder::class,
             BookingSeeder::class,
         ]);

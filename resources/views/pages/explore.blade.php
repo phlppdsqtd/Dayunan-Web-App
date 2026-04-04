@@ -157,7 +157,7 @@
                                         <div class="gallery-track" id="gallery-track-{{ $gallery->id }}">
                                             @foreach($images as $img)
                                                 <div class="gallery-slide">
-                                                    <img src="{{ asset('storage/' . $img->image) }}" alt="{{ $gallery->name }}">
+                                                    <img src="{{ asset($img->image) }}" alt="{{ $gallery->name }}">
                                                 </div>
                                             @endforeach
                                         </div>
