@@ -125,7 +125,7 @@
                                         <div class="gallery-image-list mb-3">
                                             @foreach($images as $img)
                                                 <div class="gallery-image-item">
-                                                    <img src="{{ asset('storage/' . $img->image) }}" alt="{{ $gallery->name }}">
+                                                    <img src="{{ asset($img->image) }}" alt="{{ $gallery->name }}">
 
                                                     <form action="{{ route('galleries.deleteImage', $img->id) }}" method="POST" onsubmit="return confirm('Delete this image?')">
                                                         @csrf
@@ -189,7 +189,7 @@
                     <div class="dayunan-card h-100 d-flex flex-column">
                         <div class="dayunan-card-image-wrap">
                             @if ($package->image)
-                                <img src="{{ asset('storage/' . $package->image) }}" alt="{{ $package->title }}" class="dayunan-card-image">
+                                <img src="{{ asset($package->image) }}" alt="{{ $package->title }}" class="dayunan-card-image">
                             @else
                                 <img src="{{ asset('images/home.jpg') }}" alt="{{ $package->title }}" class="dayunan-card-image">
                             @endif
