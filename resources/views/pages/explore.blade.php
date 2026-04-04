@@ -259,10 +259,23 @@
                                     {{ $package->title }}
                                 </h3>
 
-                                <p class="text-muted mb-3" style="font-size: 1.05rem; line-height: 1.7;">
-                                    {{ $package->description }}
-                                </p>
+                                @php
+                                    $descriptionLines = collect(preg_split('/\r\n|\r|\n/', $package->description))
+                                        ->map(fn($line) => trim(preg_replace('/^[•\-]\s*/u', '', $line)))
+                                        ->filter();
+                                @endphp
 
+                                @if($descriptionLines->count())
+                                    <ul class="package-description-list mb-3">
+                                        @foreach($descriptionLines as $line)
+                                            <li>{{ $line }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p class="text-muted mb-3" style="font-size: 1.05rem; line-height: 1.7;">
+                                        {{ $package->description }}
+                                    </p>
+                                @endif
                                 @if($package->amenities)
                                     <p class="mb-3" style="font-size: 1rem;">
                                         <strong>Amenities:</strong> {{ $package->amenities }}
@@ -497,6 +510,23 @@
             height: 220px;
         }
     }
+
+    .package-description-list {
+        margin: 0 0 1rem 0;
+        padding-left: 1.2rem;
+        color: #6c757d;
+        font-size: 1.05rem;
+        line-height: 1.9;
+    }
+
+    .package-description-list li {
+        margin-bottom: 0.45rem;
+    }
+
+    .package-description-list li::marker {
+        color: #7a746c;
+    }
+
 </style>
 
 <script>
