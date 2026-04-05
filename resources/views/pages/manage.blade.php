@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            <div class="col-md-5">
+            {{-- <div class="col-md-5">
                 <div class="bg-white h-100 p-4 p-md-5 shadow-sm text-center" style="border: 1px solid #e7ddd1;">
                     <span class="khula d-block mb-3" style="color: var(--terracotta);">ADMIN</span>
                     <h3 class="mb-3">Admin Login</h3>
@@ -32,7 +32,7 @@
                     </p>
                     <a href="{{ route('admin.login') }}" class="btn btn-outline-dark w-100">Go to Admin Login</a>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </section>
