@@ -6,6 +6,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ManageBookingController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\BookingController;
 
 Route::get('/', function () {
     return view('pages.home');
@@ -21,9 +22,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Public Pages
 Route::get('/explore', [PackageController::class, 'explore'])->name('explore');
 
-Route::get('/book', function () {
-    return view('pages.book');
-})->name('book');
+Route::get('/book', [BookingController::class, 'create'])->name('book');
+Route::post('/book', [BookingController::class, 'store'])->name('book.store');
+Route::get('/api/blocked-dates', [BookingController::class, 'getBlockedDates'])->name('api.blocked-dates');
 
 Route::get('/manage', function () {
     return view('pages.manage');
@@ -44,10 +45,6 @@ Route::middleware('auth')->group(function () {
 
 // Gallery Routes for Admin
 Route::middleware('auth')->group(function () {
-    Route::post('/packages', [PackageController::class, 'store'])->name('packages.store');
-    Route::put('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
-    Route::delete('/packages/{package}', [PackageController::class, 'destroy'])->name('packages.destroy');
-
     Route::post('/galleries', [GalleryController::class, 'store'])->name('galleries.store');
     Route::put('/galleries/{gallery}', [GalleryController::class, 'update'])->name('galleries.update');
     Route::post('/galleries/{gallery}/image', [GalleryController::class, 'addImage'])->name('galleries.addImage');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,12 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            // Associate any guest bookings with this user's email
+            Booking::where('guest_email', $request->email)
+                   ->whereNull('user_id')
+                   ->update(['user_id' => Auth::id()]);
+
             return redirect()->intended('/');
         }
 

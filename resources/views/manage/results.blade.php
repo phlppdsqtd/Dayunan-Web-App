@@ -10,7 +10,7 @@
                     
                     <section class="mb-5">
                         <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem;">YOUR BOOKINGS</span>
-                        <h2 class="tenor-sans text-jungle display-5 mb-0">{{ $user->name }}</h2>
+                        <h2 class="tenor-sans text-jungle display-5 mb-0">{{ $user?->name ?? 'Booking Details' }}</h2>
                         <div class="mx-auto mt-4 accent-line"></div>
                     </section>
 

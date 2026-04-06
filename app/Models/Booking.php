@@ -20,6 +20,9 @@ class Booking extends Model
         'check_out',
         'status',
         'total_price',
+        'guest_name',
+        'guest_email',
+        'guest_phone',
     ];
 
     /**
@@ -27,8 +30,8 @@ class Booking extends Model
      * This automatically turns your dates into Carbon objects so you can format them easily.
      */
     protected $casts = [
-        'check_in' => 'date',
-        'check_out' => 'date',
+        'check_in' => 'datetime',
+        'check_out' => 'datetime',
     ];
 
     /**
