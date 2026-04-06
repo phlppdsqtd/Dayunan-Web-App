@@ -41,19 +41,73 @@
                     <div class="dayunan-card-body">
                         <h3 class="mb-4">Select Accommodation</h3>
 
-                        <div class="row g-3">
+                        <div class="row g-4 mt-3">
                             @foreach($packages as $package)
                                 <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="package_id" id="package_{{ $package->id }}" value="{{ $package->id }}" {{ $selectedPackage && $selectedPackage->id == $package->id ? 'checked' : '' }} required>
-                                        <label class="form-check-label" for="package_{{ $package->id }}">
-                                            <strong>{{ $package->title }}</strong><br>
-                                            <small class="text-muted">₱{{ number_format($package->price, 2) }} per day • Up to {{ $package->max_guests }} guests</small>
+                                    <div class="package-select-card {{ $selectedPackage && $selectedPackage->id == $package->id ? 'selected' : '' }}">
+                                        <input type="radio" class="package-radio" name="package_id" id="package_{{ $package->id }}" value="{{ $package->id }}" {{ $selectedPackage && $selectedPackage->id == $package->id ? 'checked' : '' }} required style="display:none;">
+                                        <label for="package_{{ $package->id }}" class="package-select-label w-100 h-100">
+                                            <div class="package-image-wrap">
+                                                @if($package->image)
+                                                    <img src="{{ asset('storage/' . $package->image) }}" alt="{{ $package->title }}" class="package-img">
+                                                @else
+                                                    <img src="{{ asset('images/home.jpg') }}" alt="{{ $package->title }}" class="package-img">
+                                                @endif
+                                            </div>
+                                            <div class="p-3">
+                                                <h6 class="mb-2">{{ $package->title }}</h6>
+                                                @if($package->description)
+                                                    <p class="text-muted small mb-2">{{ Str::limit($package->description, 80) }}</p>
+                                                @endif
+                                                @if($package->amenities)
+                                                    <p class="text-muted xsmall mb-2"><strong>Amen:</strong> {{ Str::limit($package->amenities, 60) }}</p>
+                                                @endif
+                                                <div class="d-flex justify-content-between mt-2">
+                                                    <span class="text-muted small">Max {{ $package->max_guests }} guests</span>
+                                                    <strong class="text-terracotta">₱{{ number_format($package->price, 2) }}/day</strong>
+                                                </div>
+                                            </div>
                                         </label>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
+
+                        <style>
+.package-select-card {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 240px;
+    cursor: pointer;
+}
+.package-select-card:hover {
+    border-color: var(--terracotta);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(58,95,65,0.15);
+}
+.package-select-card.selected {
+    border-color: var(--terracotta);
+    box-shadow: 0 8px 32px rgba(58,95,65,0.2);
+}
+.package-image-wrap {
+    height: 140px;
+    overflow: hidden;
+}
+.package-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.package-select-label {
+    display: flex !important;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+}
+.xsmall { font-size: 0.75rem; }
+                        </style>
                     </div>
                 </div>
 
@@ -63,17 +117,17 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="check_in" class="form-label">Check-in Date & Time</label>
-                                <input type="datetime-local" class="form-control" id="check_in" name="check_in" required>
+                                <label for="check_in" class="form-label">Check-in Date <small class="text-muted">(from 2PM)</small></label>
+                                <input type="date" class="form-control" id="check_in" name="check_in" min="{{ now()->format('Y-m-d') }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="check_out" class="form-label">Check-out Date & Time</label>
-                                <input type="datetime-local" class="form-control" id="check_out" name="check_out" required>
+                                <label for="check_out" class="form-label">Check-out Date <small class="text-muted">(by 12NN)</small></label>
+                                <input type="date" class="form-control" id="check_out" name="check_out" required>
                             </div>
                         </div>
 
-                        <div id="calendar-container" class="mt-4">
-                            <!-- Calendar will be rendered here -->
+                        <div class="alert alert-info mt-3 small">
+                            <i class="bi bi-check-circle me-2"></i> Past dates blocked • Approved bookings blocked • Daily rates apply (check-in after 2PM, checkout before 12NN).
                         </div>
                     </div>
                 </div>
@@ -113,88 +167,51 @@
 document.addEventListener('DOMContentLoaded', function() {
     const checkInInput = document.getElementById('check_in');
     const checkOutInput = document.getElementById('check_out');
-    const packageRadios = document.querySelectorAll('input[name="package_id"]');
-    let selectedHours = 22; // default
-
-    // Function to get hours from package title
-    function getHoursFromTitle(title) {
-        const match = title.match(/\((\d+) Hours\)/);
-        return match ? parseInt(match[1]) : 22;
-    }
-
-    // Update selected hours when package changes
-    packageRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const label = document.querySelector(`label[for="${this.id}"]`);
-            if (label) {
-                selectedHours = getHoursFromTitle(label.textContent);
-            }
-        });
-    });
-
-    // Set check_out based on check_in + hours
+    
+    // Min check_out = check_in + 1 day
     checkInInput.addEventListener('change', function() {
         if (this.value) {
             const checkInDate = new Date(this.value);
-            checkInDate.setHours(checkInDate.getHours() + selectedHours);
-            checkOutInput.value = checkInDate.toISOString().slice(0, 16); // Format for datetime-local
-            checkOutInput.min = this.value; // Ensure check_out is after check_in
-        } else {
-            checkOutInput.value = '';
-            checkOutInput.min = '';
-        }
-    });
-
-    // Prevent check_out from being before check_in
-    checkOutInput.addEventListener('change', function() {
-        if (checkInInput.value && this.value <= checkInInput.value) {
-            // Reset to check_in + hours
-            const checkInDate = new Date(checkInInput.value);
-            checkInDate.setHours(checkInDate.getHours() + selectedHours);
-            this.value = checkInDate.toISOString().slice(0, 16);
-            this.setCustomValidity('');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
-
-    // Fetch blocked datetime ranges
-    fetch('{{ route("api.blocked-dates") }}')
-        .then(response => response.json())
-        .then(blockedRanges => {
-            // Validate against blocked datetime ranges
-            function isTimeBlocked(checkInTime, checkOutTime) {
-                return blockedRanges.some(range => {
-                    const rangeStart = new Date(range.start);
-                    const rangeEnd = new Date(range.end);
-                    const userCheckIn = new Date(checkInTime);
-                    const userCheckOut = new Date(checkOutTime);
-                    
-                    // Check if there's any overlap
-                    return userCheckIn < rangeEnd && userCheckOut > rangeStart;
-                });
+            const minCheckOutDate = new Date(checkInDate);
+            minCheckOutDate.setDate(minCheckOutDate.getDate() + 1);
+            checkOutInput.min = minCheckOutDate.toISOString().slice(0, 10);
+            if (checkOutInput.value < checkOutInput.min) {
+                checkOutInput.value = checkOutInput.min;
             }
-
-            checkInInput.addEventListener('change', function() {
-                if (this.value && checkOutInput.value) {
-                    if (isTimeBlocked(this.value, checkOutInput.value)) {
-                        this.setCustomValidity('This time period overlaps with an existing booking.');
-                    } else {
-                        this.setCustomValidity('');
-                    }
+        }
+    });
+    
+    // Blocked dates validation (date-only)
+    fetch('{{ route("api.blocked-dates") }}')
+        .then(r => r.json())
+        .then(data => {
+            const isDateOverlapping = (start, end) => data.some(range => 
+                start <= range.end_date && end >= range.start_date
+            );
+            
+            const validate = () => {
+                const start = checkInInput.value;
+                const end = checkOutInput.value;
+                if (start && end && isDateOverlapping(start, end)) {
+                    checkOutInput.setCustomValidity('Dates overlap approved booking.');
+                    checkInInput.setCustomValidity('Dates overlap approved booking.');
+                } else {
+                    checkInInput.setCustomValidity('');
+                    checkOutInput.setCustomValidity('');
                 }
-            });
-
-            checkOutInput.addEventListener('change', function() {
-                if (checkInInput.value && this.value) {
-                    if (isTimeBlocked(checkInInput.value, this.value)) {
-                        this.setCustomValidity('This time period overlaps with an existing booking.');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                }
-            });
+            };
+            
+            checkInInput.addEventListener('change', validate);
+            checkOutInput.addEventListener('change', validate);
         });
+        
+    // Package visual feedback
+    document.querySelectorAll('.package-radio').forEach(r => {
+        r.addEventListener('change', () => {
+            document.querySelectorAll('.package-select-card').forEach(c => c.classList.remove('selected'));
+            r.closest('.package-select-card').classList.add('selected');
+        });
+    });
 });
 </script>
 @endsection

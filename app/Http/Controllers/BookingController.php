@@ -25,26 +25,26 @@ class BookingController extends Controller
     {
         $request->validate([
             'package_id' => 'required|exists:packages,id',
-            'check_in' => 'required|date|after:now',
+            'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'guest_name' => 'required_if:user_id,null|string|max:255',
             'guest_email' => 'required_if:user_id,null|email|max:255',
             'guest_phone' => 'nullable|string|max:20',
         ]);
 
-        $checkIn = Carbon::parse($request->check_in);
-        $checkOut = Carbon::parse($request->check_out);
+        $checkIn = Carbon::parse($request->check_in)->startOfDay();
+        $checkOut = Carbon::parse($request->check_out)->startOfDay();
 
-        // Check for overlapping approved bookings
+        // Check for overlapping approved bookings (date-based)
         $existingBooking = Booking::where('status', 'approved')
             ->where(function($query) use ($checkIn, $checkOut) {
-                $query->whereRaw('check_in < ?', [$checkOut->toDateTimeString()])
-                      ->whereRaw('check_out > ?', [$checkIn->toDateTimeString()]);
+                $query->where('check_in', '<=', $checkOut)
+                      ->where('check_out', '>=', $checkIn);
             })
             ->exists();
 
         if ($existingBooking) {
-            return redirect()->back()->with('error', 'This time period overlaps with an existing approved booking. Please select different dates.');
+            return redirect()->back()->with('error', 'Selected dates overlap with an existing approved booking.');
         }
 
         $package = Package::findOrFail($request->package_id);
@@ -85,8 +85,8 @@ class BookingController extends Controller
             ->get()
             ->map(function ($booking) {
                 return [
-                    'start' => $booking->check_in->toIso8601String(),
-                    'end' => $booking->check_out->toIso8601String(),
+                    'start_date' => $booking->check_in->format('Y-m-d'),
+                    'end_date' => $booking->check_out->format('Y-m-d'),
                 ];
             })
             ->toArray();
