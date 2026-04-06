@@ -70,7 +70,7 @@ class BookingSeeder extends Seeder
             'package_id' => 1, 
             'check_in' => $checkIn5->toDateString(),
             'check_out' => $checkOut5->toDateString(),
-            'status' => 'pending',
+            'status' => 'approved',
             'total_price' => $this->calculatePrice(1, $checkIn5, $checkOut5),
         ]);
     }

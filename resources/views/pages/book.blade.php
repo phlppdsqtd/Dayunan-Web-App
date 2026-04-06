@@ -127,7 +127,7 @@
                         </div>
 
                         <div class="alert alert-info mt-3 small">
-                            <i class="bi bi-check-circle me-2"></i> Past dates blocked • Approved bookings blocked • Daily rates apply (check-in after 2PM, checkout before 12NN).
+                            <i class="bi bi-check-circle me-2"></i> Past dates blocked • Approved bookings blocked • Daily rates apply (check-in after 2PM, checkout before 2AM or 12NN)
                         </div>
                     </div>
                 </div>
