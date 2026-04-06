@@ -15,36 +15,36 @@ class GallerySeeder extends Seeder
                 'name' => 'Lounge Area',
                 'description' => 'A relaxed open space for gathering and quiet afternoons.',
                 'images' => [
-                    'images/galleries/lounge1.jpg',
-                    'images/galleries/lounge2.jpg',
-                    'images/galleries/lounge3.jpg',
+                    'galleries/lounge1.jpg',
+                    'galleries/lounge2.jpg',
+                    'galleries/lounge3.jpg',
                 ],
             ],
             [
                 'name' => 'Standard Room',
                 'description' => 'A simple and comfortable room for rest.',
                 'images' => [
-                    'images/galleries/standard1.jpg',
-                    'images/galleries/standard2.jpg',
-                    'images/galleries/standard3.jpg',
+                    'galleries/standard1.jpg',
+                    'galleries/standard2.jpg',
+                    'galleries/standard3.jpg',
                 ],
             ],
             [
                 'name' => 'Barkada Room',
                 'description' => 'A shared space designed for groups.',
                 'images' => [
-                    'images/galleries/barkada1.jpg',
-                    'images/galleries/barkada2.jpg',
-                    'images/galleries/barkada3.jpg',
+                    'galleries/barkada1.jpg',
+                    'galleries/barkada2.jpg',
+                    'galleries/barkada3.jpg',
                 ],
             ],
             [
                 'name' => 'Master Bedroom',
                 'description' => 'A private and more spacious room for a slower stay.',
                 'images' => [
-                    'images/galleries/master1.jpg',
-                    'images/galleries/master2.jpg',
-                    'images/galleries/master3.jpg',
+                    'galleries/master1.jpg',
+                    'galleries/master2.jpg',
+                    'galleries/master3.jpg',
                 ],
             ],
         ];
