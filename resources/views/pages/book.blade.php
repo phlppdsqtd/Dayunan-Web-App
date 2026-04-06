@@ -121,7 +121,7 @@
                                 <input type="date" class="form-control" id="check_in" name="check_in" min="{{ now()->format('Y-m-d') }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="check_out" class="form-label">Check-out Date <small class="text-muted">(by 12NN)</small></label>
+                                <label for="check_out" class="form-label">Check-out Date <small class="text-muted">(by 2AM or 12NN)</small></label>
                                 <input type="date" class="form-control" id="check_out" name="check_out" required>
                             </div>
                         </div>
