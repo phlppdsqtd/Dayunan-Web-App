@@ -14,50 +14,69 @@ class GalleryController extends Controller
     {
         if (Auth::user()->role !== 'admin') abort(403);
 
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
         Gallery::create([
             'name' => $request->name,
             'description' => $request->description
         ]);
 
-        return back();
+        return back()->with('success', 'Gallery created.');
     }
 
     public function update(Request $request, Gallery $gallery)
-{
-    if (Auth::user()->role !== 'admin') abort(403);
+    {
+        if (Auth::user()->role !== 'admin') abort(403);
 
-    $gallery->update([
-        'name' => $request->name,
-        'description' => $request->description
-    ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
 
-    return back()->with('success', 'Gallery updated.');
-}
+        $gallery->update([
+            'name' => $request->name,
+            'description' => $request->description
+        ]);
+
+        return back()->with('success', 'Gallery updated.');
+    }
 
     public function addImage(Request $request, Gallery $gallery)
     {
         if (Auth::user()->role !== 'admin') abort(403);
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('galleries', 'public');
+        $request->validate([
+            'images.*' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
 
-            GalleryImage::create([
-                'gallery_id' => $gallery->id,
-                'image' => $path
-            ]);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $imageFile) {
+                $path = $imageFile->store('galleries', 'public');
+
+                GalleryImage::create([
+                    'gallery_id' => $gallery->id,
+                    'image' => $path,
+                ]);
+            }
         }
 
-        return back();
+        return back()->with('success', 'Images uploaded successfully.');
     }
 
     public function deleteImage(GalleryImage $image)
     {
         if (Auth::user()->role !== 'admin') abort(403);
 
-        Storage::disk('public')->delete($image->image);
+        if ($image->image && Storage::disk('public')->exists($image->image)) {
+            Storage::disk('public')->delete($image->image);
+        }
+
         $image->delete();
 
-        return back();
+        return back()->with('success', 'Image deleted.');
     }
 
     public function destroy(Gallery $gallery)
@@ -65,11 +84,13 @@ class GalleryController extends Controller
         if (Auth::user()->role !== 'admin') abort(403);
 
         foreach ($gallery->images as $img) {
-            Storage::disk('public')->delete($img->image);
+            if ($img->image && Storage::disk('public')->exists($img->image)) {
+                Storage::disk('public')->delete($img->image);
+            }
         }
 
         $gallery->delete();
 
-        return back();
+        return back()->with('success', 'Gallery deleted.');
     }
 }
