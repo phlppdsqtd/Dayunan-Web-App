@@ -117,7 +117,7 @@
                                     <form action="{{ route('galleries.addImage', $gallery->id) }}" method="POST" enctype="multipart/form-data" class="mb-3">
                                         @csrf
                                         <label class="form-label small">Add Photo</label>
-                                        <input type="file" name="image" class="form-control mb-2" required>
+                                        <input type="file" name="images[]" class="form-control mb-2" multiple required>
                                         <button class="btn btn-sm btn-dark w-100">Upload Photo</button>
                                     </form>
 
@@ -125,7 +125,7 @@
                                         <div class="gallery-image-list mb-3">
                                             @foreach($images as $img)
                                                 <div class="gallery-image-item">
-                                                    <img src="{{ asset($img->image) }}" alt="{{ $gallery->name }}">
+                                                    <img src="{{ asset('storage/' . $img->image) }}" alt="{{ $gallery->name }}">
 
                                                     <form action="{{ route('galleries.deleteImage', $img->id) }}" method="POST" onsubmit="return confirm('Delete this image?')">
                                                         @csrf
@@ -157,7 +157,7 @@
                                         <div class="gallery-track" id="gallery-track-{{ $gallery->id }}">
                                             @foreach($images as $img)
                                                 <div class="gallery-slide">
-                                                    <img src="{{ asset($img->image) }}" alt="{{ $gallery->name }}">
+                                                    <img src="{{ asset('storage/' . $img->image) }}" alt="{{ $gallery->name }}">
                                                 </div>
                                             @endforeach
                                         </div>
@@ -189,7 +189,7 @@
                     <div class="dayunan-card h-100 d-flex flex-column">
                         <div class="dayunan-card-image-wrap">
                             @if ($package->image)
-                                <img src="{{ asset($package->image) }}" alt="{{ $package->title }}" class="dayunan-card-image">
+                                <img src="{{ asset('storage/' . $package->image) }}" alt="{{ $package->title }}" class="dayunan-card-image">
                             @else
                                 <img src="{{ asset('images/home.jpg') }}" alt="{{ $package->title }}" class="dayunan-card-image">
                             @endif
