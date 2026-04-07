@@ -34,65 +34,67 @@
                 </div>
             @endif
 
-            <form action="{{ route('book.store') }}" method="POST" id="booking-form">
-                @csrf
 
-                <div class="dayunan-card mb-4">
-                    <div class="dayunan-card-body">
-                        <h3 class="mb-4">Select Accommodation</h3>
+            <div class="text-center">
+                <h3 class="mb-4">Select Accommodation</h3>
+                <p class="text-muted mb-5">Choose your preferred space to continue booking.</p>
 
-                        <div class="row g-4 mt-3">
-                            @foreach($packages as $package)
-                                <div class="col-md-6">
-                                    <div class="package-select-card {{ $selectedPackage && $selectedPackage->id == $package->id ? 'selected' : '' }}">
-                                        <input type="radio" class="package-radio" name="package_id" id="package_{{ $package->id }}" value="{{ $package->id }}" {{ $selectedPackage && $selectedPackage->id == $package->id ? 'checked' : '' }} required style="display:none;">
-                                        <label for="package_{{ $package->id }}" class="package-select-label w-100 h-100">
-                                            <div class="package-image-wrap">
-                                                @if($package->image)
-                                                    <img src="{{ asset('storage/' . $package->image) }}" alt="{{ $package->title }}" class="package-img">
-                                                @else
-                                                    <img src="{{ asset('images/home.jpg') }}" alt="{{ $package->title }}" class="package-img">
-                                                @endif
-                                            </div>
-                                            <div class="p-3">
-                                                <h6 class="mb-2">{{ $package->title }}</h6>
-                                                @if($package->description)
-                                                    <p class="text-muted small mb-2">{{ Str::limit($package->description, 80) }}</p>
-                                                @endif
-                                                @if($package->amenities)
-                                                    <p class="text-muted xsmall mb-2"><strong>Amen:</strong> {{ Str::limit($package->amenities, 60) }}</p>
-                                                @endif
-                                                <div class="d-flex justify-content-between mt-2">
-                                                    <span class="text-muted small">Max {{ $package->max_guests }} guests</span>
-                                                    <strong class="text-terracotta">₱{{ number_format($package->price, 2) }}/day</strong>
-                                                </div>
-                                            </div>
-                                        </label>
+                <div class="row g-4">
+                    @foreach($packages as $package)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="package-select-card">
+                                <input type="radio" class="package-radio" name="package_id" id="package_{{ $package->id }}" value="{{ $package->id }}" style="display:none;">
+                                <label for="package_{{ $package->id }}" class="package-select-label w-100 h-100">
+                                    <div class="package-image-wrap">
+                                        @if($package->image)
+                                            <img src="{{ asset('storage/' . $package->image) }}" alt="{{ $package->title }}" class="package-img">
+                                        @else
+                                            <img src="{{ asset('images/home.jpg') }}" alt="{{ $package->title }}" class="package-img">
+                                        @endif
                                     </div>
-                                </div>
-                            @endforeach
+                                    <div class="p-4 text-center">
+                                        <h5 class="mb-3">{{ $package->title }}</h5>
+                                        <div class="mb-3">
+                                            @if($package->description)
+                                                <p class="text-muted small mb-0">{{ Str::limit($package->description, 100) }}</p>
+                                            @endif
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-end flex-column h-100">
+                                            <div class="mb-auto">
+                                                @if($package->amenities)
+                                                    <small class="text-muted d-block mb-2">{{ Str::limit($package->amenities, 50) }}</small>
+                                                @endif
+                                                <small class="text-muted">Max {{ $package->max_guests }} guests</small>
+                                            </div>
+                                            <div>
+                                                <strong class="h5 text-terracotta d-block mb-2">₱{{ number_format($package->price, 2) }}/day</strong>
+                                                <span class="btn btn-dayunan btn-sm">Select</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
+                    @endforeach
+                </div>
 
-                        <style>
+                <style>
 .package-select-card {
     border: 2px solid transparent;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     transition: all 0.3s ease;
-    height: 240px;
+    height: 420px;
     cursor: pointer;
+    box-shadow: 0 8px 24px rgba(58,95,65,0.08);
 }
 .package-select-card:hover {
     border-color: var(--terracotta);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(58,95,65,0.15);
-}
-.package-select-card.selected {
-    border-color: var(--terracotta);
-    box-shadow: 0 8px 32px rgba(58,95,65,0.2);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(58,95,65,0.15);
 }
 .package-image-wrap {
-    height: 140px;
+    height: 200px;
     overflow: hidden;
 }
 .package-img {
@@ -105,60 +107,22 @@
     flex-direction: column;
     margin: 0;
     padding: 0;
+    height: 100%;
 }
-.xsmall { font-size: 0.75rem; }
-                        </style>
-                    </div>
-                </div>
+.xsmall { font-size: 0.8rem; }
+                </style>
+            </div>
 
-                <div class="dayunan-card mb-4">
-                    <div class="dayunan-card-body">
-                        <h3 class="mb-4">Select Dates</h3>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="check_in" class="form-label">Check-in Date <small class="text-muted">(from 2PM)</small></label>
-                                <input type="date" class="form-control" id="check_in" name="check_in" min="{{ now()->format('Y-m-d') }}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="check_out" class="form-label">Check-out Date <small class="text-muted">(by 12NN)</small></label>
-                                <input type="date" class="form-control" id="check_out" name="check_out" required>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info mt-3 small">
-                            <i class="bi bi-check-circle me-2"></i> Past dates blocked • Approved bookings blocked • Daily rates apply (check-in after 2PM, checkout before 12NN).
-                        </div>
-                    </div>
-                </div>
-
-                @if(!Auth::check())
-                <div class="dayunan-card mb-4">
-                    <div class="dayunan-card-body">
-                        <h3 class="mb-4">Guest Information</h3>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="guest_name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="guest_name" name="guest_name" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="guest_email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="guest_email" name="guest_email" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="guest_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="guest_phone" name="guest_phone">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-                <div class="text-center">
-                    <button type="submit" class="btn btn-dayunan btn-lg">Submit Booking</button>
-                </div>
-            </form>
+            <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.package-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const packageId = this.value;
+            window.location.href = `/book/details/${packageId}`;
+        });
+    });
+});
+            </script>
         </div>
     </div>
 </div>
