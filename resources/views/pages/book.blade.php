@@ -36,8 +36,7 @@
 
 
             <div class="text-center">
-                <h3 class="mb-4">Select Accommodation</h3>
-                <p class="text-muted mb-5">Choose your preferred space to continue booking.</p>
+               
 
                 <div class="row g-4">
                     @foreach($packages as $package)
@@ -56,14 +55,35 @@
                                         <h5 class="mb-3">{{ $package->title }}</h5>
                                         <div class="mb-3">
                                             @if($package->description)
-                                                <p class="text-muted small mb-0">{{ Str::limit($package->description, 100) }}</p>
+                                                @php
+                                                    $descLines = preg_split('/\\n+|\\.+\\s*\\n?|\\.\\s+(?=\\w{4,})/', trim($package->description), 4);
+                                                    $descLines = array_filter($descLines, fn($line) => trim($line));
+                                                    $descLines = array_slice($descLines, 0, 3);
+@endphp
+                                                <ul class="list-unstyled text-muted small mb-0 text-start" style="line-height: 1.3; padding-left: 0.25rem;">
+                                                    @foreach($descLines as $line)
+                                                        <li style="margin-bottom: 0.25rem;">{{ trim($line) }}</li>
+                                                    @endforeach
+                                                </ul>
+
+
+
                                             @endif
                                         </div>
                                         <div class="d-flex justify-content-between align-items-end flex-column h-100">
                                             <div class="mb-auto">
-                                                @if($package->amenities)
-                                                    <small class="text-muted d-block mb-2">{{ Str::limit($package->amenities, 50) }}</small>
+@if($package->amenities)
+                                                    @php
+                                                        $amenityItems = array_map('trim', explode(',', $package->amenities));
+                                                        $amenityItems = array_slice(array_filter($amenityItems), 0, 3);
+                                                    @endphp
+                                                    <ul class="list-unstyled text-muted small mb-2 text-start" style="line-height: 1.3; padding-left: 0.25rem;">
+                                                        @foreach($amenityItems as $item)
+                                                            <li style="margin-bottom: 0.125rem;">{{ $item }}</li>
+                                                        @endforeach
+                                                    </ul>
                                                 @endif
+
                                                 <small class="text-muted">Max {{ $package->max_guests }} guests</small>
                                             </div>
                                             <div>
@@ -84,7 +104,7 @@
     border-radius: 16px;
     overflow: hidden;
     transition: all 0.3s ease;
-    height: 420px;
+    height: 440px;
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(58,95,65,0.08);
 }

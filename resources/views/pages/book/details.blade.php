@@ -9,7 +9,7 @@
                     <i class="bi bi-arrow-left me-2"></i> Back to accommodations
                 </a>
                 <span class="khula d-block mb-3" style="color: var(--terracotta);">CONFIRM & BOOK</span>
-                <h1 class="mb-3">Review {{ $package->title }}</h1>
+    
                 <p class="mx-auto text-muted" style="max-width: 600px; font-size: 1.1rem;">
                     Confirm your accommodation details and complete your booking.
                 </p>
@@ -94,48 +94,57 @@
                 <div class="dayunan-card mb-4">
                     <div class="dayunan-card-body">
                         <h3 class="mb-4">Select Dates</h3>
-                        <div class="row g-3">
+                        <div class="row g-4">
                             <div class="col-md-6">
-                                <label for="check_in" class="form-label">Check-in Date <small class="text-muted">(from 2PM)</small></label>
-                                <input type="date" class="form-control" id="check_in" name="check_in" min="{{ now()->addDay()->format('Y-m-d') }}" required>
+        <label class="form-label fw-semibold text-terracotta mb-2">Check-in Date <small class="text-muted">(from 2PM)</small> <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm flatpickr-input" id="check_in" name="check_in" placeholder="Select check-in" readonly required style="background: white;">
                             </div>
                             <div class="col-md-6">
-                                <label for="check_out" class="form-label">Check-out Date <small class="text-muted">(by 12NN)</small></label>
-                                <input type="date" class="form-control" id="check_out" name="check_out" required>
+                                <label class="form-label fw-semibold text-terracotta mb-2">Check-out Date <small class="text-muted">(by 12NN)</small> <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm flatpickr-input" id="check_out" name="check_out" placeholder="Select check-out" readonly required>
                             </div>
                         </div>
-                        <div class="alert alert-info mt-3 small">
+                        <div class="alert alert-info mt-3 mb-5 small">
                             <i class="bi bi-check-circle me-2"></i> Past dates blocked • Approved bookings blocked • Daily rates.
                         </div>
                     </div>
                 </div>
 
                 {{-- Guest Info --}}
-                @if(!Auth::check())
-                <div class="dayunan-card mb-4">
+@if(!Auth::check())
+                <div class="dayunan-card mb-5">
+
                     <div class="dayunan-card-body">
                         <h3 class="mb-4">Guest Information</h3>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="guest_name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="guest_name" name="guest_name" required>
+                                <label for="guest_name" class="form-label fw-semibold text-terracotta mb-2">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_name" name="guest_name" placeholder="Enter full name" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="guest_email" class="form-label fw-semibold text-terracotta mb-2">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_email" name="guest_email" placeholder="your@email.com" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="guest_phone" class="form-label fw-semibold text-terracotta mb-2">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_phone" name="guest_phone" placeholder="+63 123 465 789" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="guest_email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="guest_email" name="guest_email" required>
+                                <label for="guest_confirm_email" class="form-label fw-semibold text-terracotta mb-2">Confirm Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_confirm_email" name="guest_confirm_email" placeholder="Retype your email" required>
                             </div>
-                            <div class="col-md-6">
-                                <label for="guest_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="guest_phone" name="guest_phone">
-                            </div>
+
+
                         </div>
                     </div>
                 </div>
                 @endif
 
-                <div class="text-center">
-                    <button type="submit" class="btn btn-dayunan btn-lg px-5">
-                        <i class="bi bi-check-circle me-2"></i> Confirm & Book Now
+<div class="text-center mt-5 pt-5">
+                    <button type="submit" id="submit-booking" class="btn btn-dayunan btn-lg px-6 py-4" style="font-size: 1.3rem; min-height: 65px; box-shadow: 0 8px 25px rgba(58,95,65,0.2);">
+                        <i class="bi bi-check-circle me-3" style="font-size: 1.4rem;"></i> Complete all fields first
                     </button>
                 </div>
             </form>
@@ -146,63 +155,169 @@
 {{-- Same JS as book.blade.php for dates/blocked --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const checkInInput = document.getElementById('check_in');
-    const checkOutInput = document.getElementById('check_out');
+    // Flatpickr calendars for check-in/out
+    let blockedDates = [];
     
-    checkInInput.addEventListener('change', function() {
-        if (this.value) {
-            const checkInDate = new Date(this.value);
-            const minCheckOutDate = new Date(checkInDate);
-            minCheckOutDate.setDate(minCheckOutDate.getDate() + 1);
-            checkOutInput.min = minCheckOutDate.toISOString().slice(0, 10);
-            if (checkOutInput.value < checkOutInput.min) {
-                checkOutInput.value = checkOutInput.min;
-            }
-        }
-    });
-    
+    // Fetch blocked dates
     fetch(`{{ route("api.blocked-dates") }}?package={{ $package->id }}`)
         .then(r => r.json())
         .then(data => {
-            // Make blocked ranges unselectable via validation + visual
-            const blockedRanges = data;
+            blockedDates = data.map(range => ({
+                from: range.start_date,
+                to: range.end_date
+            }));
             
-            const isOverlapping = (checkin, checkout) => {
-                return blockedRanges.some(range => checkin < range.end_date && checkout > range.start_date);
-            };
-            
-            const validateDates = () => {
-                const checkin = checkInInput.value;
-                const checkout = checkOutInput.value;
-                if (checkin && checkout && isOverlapping(checkin, checkout)) {
-                    checkInInput.style.backgroundColor = '#ffebee';
-                    checkOutInput.style.backgroundColor = '#ffebee';
-                    checkOutInput.setCustomValidity('Dates overlap approved booking for this package.');
-                } else {
-                    checkInInput.style.backgroundColor = '';
-                    checkOutInput.style.backgroundColor = '';
-                    checkOutInput.setCustomValidity('');
-                }
-            };
-            
-            checkInInput.addEventListener('change', validateDates);
-            checkOutInput.addEventListener('change', validateDates);
-            
-            // Prevent form submit if invalid
-            document.getElementById('booking-details-form').addEventListener('submit', function(e) {
-                if (checkInInput.value && checkOutInput.value && isOverlapping(checkInInput.value, checkOutInput.value)) {
-                    e.preventDefault();
-                    alert('Please select available dates - overlaps with approved booking.');
+            // Check-in picker
+            const checkInPicker = flatpickr("#check_in", {
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                disable: blockedDates,
+                theme: 'light',
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates[0]) {
+                        // Enable checkout picker, set minDate checkin + 1
+                        const tomorrow = new Date(selectedDates[0]);
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            checkOutPicker.set('minDate', tomorrow);
+                        checkOutPicker.setDate('');
+                        validateForm(); // Trigger form validation
+                    }
                 }
             });
+            
+            // Check-out picker (initially disabled)
+            const checkOutPicker = flatpickr("#check_out", {
+                dateFormat: "Y-m-d",
+                disable: blockedDates,
+                minDate: "today",
+                theme: 'light',
+                disableMobile: true,
+                clickOpens: false, // Initially don't open
+                onReady: function() {
+                    // Wait for check-in first
+                },
+                onChange: function(selectedDates, dateStr) {
+                    validateForm();
+                }
+            });
+            
+            // Make check-out clickable only after check-in
+            const checkOutInput = document.getElementById('check_out');
+            checkOutInput.addEventListener('click', function() {
+                const checkInVal = checkInPicker.selectedDates[0];
+                if (!checkInVal) {
+                    alert('Please select check-in date first');
+                    return;
+                }
+                checkOutPicker.open();
+            });
         });
+    
+    // Rest of validation (guest fields, button control)
+    const form = document.getElementById('booking-details-form');
+    const guestName = document.getElementById('guest_name');
+    const guestEmail = document.getElementById('guest_email');
+    const guestConfirmEmail = document.getElementById('guest_confirm_email');
+    const guestPhone = document.getElementById('guest_phone');
+    
+    function validateForm() {
+        let isValid = true;
+        
+        // Clear previous errors
+        [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
+            if (field) field.classList.remove('is-invalid');
+        });
+        
+        // Date validation
+        const checkInVal = document.getElementById('check_in').value;
+        const checkOutVal = document.getElementById('check_out').value;
+        if (!checkInVal || !checkOutVal) isValid = false;
+        
+        // Guest fields
+        if (guestName && !guestName.value.trim()) {
+            guestName.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (guestEmail) {
+            if (!guestEmail.value.trim()) {
+                guestEmail.classList.add('is-invalid');
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.value)) {
+                guestEmail.classList.add('is-invalid');
+                isValid = false;
+            }
+        }
+        
+        if (guestConfirmEmail) {
+            if (!guestConfirmEmail.value.trim()) {
+                guestConfirmEmail.classList.add('is-invalid');
+                isValid = false;
+            } else if (guestEmail && guestEmail.value !== guestConfirmEmail.value) {
+                guestEmail.classList.add('is-invalid');
+                guestConfirmEmail.classList.add('is-invalid');
+                isValid = false;
+            }
+        }
+        
+        if (guestPhone && !guestPhone.value.trim()) {
+            guestPhone.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        // Button state
+        const submitBtn = document.getElementById('submit-booking');
+        if (submitBtn) {
+            submitBtn.disabled = !isValid;
+            if (isValid) {
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-3" style="font-size: 1.4rem;"></i> Confirm &amp; Book Now';
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            } else {
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-3" style="font-size: 1.4rem; opacity: 0.5;"></i> Complete all fields first';
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Real-time validation
+    [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
+        if (field) {
+            field.addEventListener('input', validateForm);
+            field.addEventListener('change', validateForm);
+        }
+    });
+    
+    // Form submit backup
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+        }
+    });
+    
+    validateForm(); // Initial
 });
 </script>
 
+
 <style>
+.flatpickr-day.disabled, .flatpickr-day.disabled:hover {
+    color: #999 !important;
+    background: #f5f5f5 !important;
+    cursor: not-allowed !important;
+    opacity: 0.5;
+}
 .object-fit-cover { object-fit: cover !important; }
+.btn-dayunan:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(58,95,65,0.3) !important; }
+.border-terracotta { border-color: var(--terracotta) !important; border-width: 2px !important; }
+.border-terracotta:focus { border-color: #d97706 !important; box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25) !important; }
 @media (max-width: 768px) {
     .package-detail-image { height: 280px; }
+    button[type="submit"] { font-size: 1.2rem !important; min-height: 55px !important; }
+    .form-control-lg { font-size: 1rem !important; }
 }
 </style>
 @endsection

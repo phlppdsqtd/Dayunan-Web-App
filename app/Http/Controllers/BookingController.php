@@ -26,7 +26,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'package_id' => 'required|exists:packages,id',
-'check_in' => 'required|date|after:today',
+'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'guest_name' => 'required_if:user_id,null|string|max:255',
             'guest_email' => 'required_if:user_id,null|email|max:255',
