@@ -83,17 +83,19 @@ class BookingController extends Controller
     public function getBlockedDates(Request $request)
     {
         $query = Booking::where('status', 'approved')
-            ->select('check_in', 'check_out');
+->select('check_in', 'check_out', 'package_id');
             
         if ($request->package) {
             $query->where('package_id', $request->package);
         }
             
-        $blockedRanges = $query->get()
+$blockedRanges = $query->get()
             ->map(function ($booking) {
+                $isTwelveHour = in_array($booking->package_id, [2, 4, 6]);
+                $blockEndDate = $isTwelveHour ? $booking->check_in->format('Y-m-d') : $booking->check_out->format('Y-m-d');
                 return [
                     'start_date' => $booking->check_in->format('Y-m-d'),
-                    'end_date' => $booking->check_out->format('Y-m-d'),
+                    'end_date' => $blockEndDate,
                 ];
             })
             ->toArray();

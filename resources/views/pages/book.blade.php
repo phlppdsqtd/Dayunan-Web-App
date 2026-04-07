@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('{{ route("api.blocked-dates") }}')
         .then(r => r.json())
         .then(data => {
-            const isDateOverlapping = (start, end) => data.some(range => 
-                start <= range.end_date && end >= range.start_date
+const isDateOverlapping = (start, end) => data.some(range => 
+                start < range.end_date && end > range.start_date
             );
             
             const validate = () => {
