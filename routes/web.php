@@ -52,3 +52,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/gallery-image/{image}', [GalleryController::class, 'deleteImage'])->name('galleries.deleteImage');
     Route::delete('/galleries/{gallery}', [GalleryController::class, 'destroy'])->name('galleries.destroy');
 });
+
+// Manage Booking - Authenticated Customer
+Route::middleware('auth')->group(function () {
+    Route::patch('/manage-booking/{booking}/cancel', [ManageBookingController::class, 'cancel'])->name('manage.cancel');
+    Route::get('/manage-booking/{booking}/edit', [ManageBookingController::class, 'edit'])->name('manage.edit');
+    Route::put('/manage-booking/{booking}/update', [ManageBookingController::class, 'update'])->name('manage.update');
+});
+
+// Manage Booking - Admin Only
+Route::middleware(['auth', 'role'])->group(function () {
+    Route::patch('/manage-booking/{booking}/approve', [ManageBookingController::class, 'approve'])->name('manage.approve');
+    Route::patch('/manage-booking/{booking}/status', [ManageBookingController::class, 'changeStatus'])->name('manage.status');
+    Route::delete('/manage-booking/{booking}', [ManageBookingController::class, 'destroy'])->name('manage.destroy');
+});

@@ -1,20 +1,23 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-
 class ManageBookingController extends Controller
 {
     public function index()
     {
         if (Auth::check()) {
             $user = Auth::user();
-            
-            // Get bookings where user_id matches or guest_email matches user's email
+
+            if ($user->role === 'admin') {
+                $bookings = Booking::with('package', 'user')
+                                    ->orderBy('check_in', 'desc')
+                                    ->get();
+                return view('manage.results', compact('bookings', 'user'));
+            }
+
             $bookings = Booking::with('package')
                                 ->where(function($query) use ($user) {
                                     $query->where('user_id', $user->id)
@@ -22,10 +25,8 @@ class ManageBookingController extends Controller
                                 })
                                 ->orderBy('check_in', 'desc')
                                 ->get();
-
             return view('manage.results', compact('bookings', 'user'));
         }
-
         return view('manage.index');
     }
 
@@ -34,10 +35,7 @@ class ManageBookingController extends Controller
         $request->validate([
             'email' => 'required|email',
         ]);
-
         $email = $request->email;
-
-        // Get bookings where user_id belongs to user with that email or guest_email matches
         $bookings = Booking::with('package')
                             ->where(function($query) use ($email) {
                                 $query->whereHas('user', function($q) use ($email) {
@@ -47,14 +45,10 @@ class ManageBookingController extends Controller
                             })
                             ->orderBy('check_in', 'desc')
                             ->get();
-
         if ($bookings->isEmpty()) {
             return back()->with('error', 'We couldn\'t find any records associated with that email.');
         }
-
         $user = User::where('email', $email)->first();
-        
-        // For guest bookings, use guest info from first booking
         if (!$user && $bookings->isNotEmpty()) {
             $guestBooking = $bookings->first();
             $user = (object) [
@@ -63,7 +57,69 @@ class ManageBookingController extends Controller
                 'is_guest' => true,
             ];
         }
-
         return view('manage.results', compact('bookings', 'user'));
+    }
+
+    public function cancel(Booking $booking)
+    {
+        if (Auth::id() !== $booking->user_id) {
+            abort(403);
+        }
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Only pending bookings can be cancelled.');
+        }
+        $booking->update(['status' => 'cancelled']);
+        return back()->with('success', 'Booking cancelled successfully.');
+    }
+
+    public function edit(Booking $booking)
+    {
+        if (Auth::id() !== $booking->user_id) {
+            abort(403);
+        }
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Only pending bookings can be edited.');
+        }
+        return view('manage.edit', compact('booking'));
+    }
+
+    public function update(Request $request, Booking $booking)
+    {
+        if (Auth::id() !== $booking->user_id) {
+            abort(403);
+        }
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Only pending bookings can be edited.');
+        }
+        $request->validate([
+            'check_in'  => 'required|date|after:today',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+        $booking->update([
+            'check_in'  => $request->check_in,
+            'check_out' => $request->check_out,
+        ]);
+        return redirect()->route('manage.index')->with('success', 'Booking updated successfully.');
+    }
+
+    public function approve(Booking $booking)
+    {
+        $booking->update(['status' => 'approved']);
+        return back()->with('success', 'Booking approved.');
+    }
+
+    public function changeStatus(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,cancelled',
+        ]);
+        $booking->update(['status' => $request->status]);
+        return back()->with('success', 'Booking status updated.');
+    }
+
+    public function destroy(Booking $booking)
+    {
+        $booking->delete();
+        return back()->with('success', 'Booking permanently deleted.');
     }
 }
