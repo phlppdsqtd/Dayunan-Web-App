@@ -13,19 +13,20 @@ class BookingController extends Controller
 {
     public function create(Request $request)
     {
-        $packages = Package::where('is_active', true)->get();
-        $selectedPackage = null;
-        if ($request->has('package_id')) {
-            $selectedPackage = Package::find($request->package_id);
-        }
-        return view('pages.book', compact('packages', 'selectedPackage'));
+        $packages = Package::where('is_active', true)->orderBy('price', 'asc')->get();
+        return view('pages.book', compact('packages'));
+    }
+
+    public function details(Package $package)
+    {
+        return view('pages.book.details', compact('package'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'package_id' => 'required|exists:packages,id',
-            'check_in' => 'required|date|after_or_equal:today',
+'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'guest_name' => 'required_if:user_id,null|string|max:255',
             'guest_email' => 'required_if:user_id,null|email|max:255',
@@ -37,9 +38,10 @@ class BookingController extends Controller
 
         // Check for overlapping approved bookings (date-based)
         $existingBooking = Booking::where('status', 'approved')
+            ->where('package_id', $request->package_id)
             ->where(function($query) use ($checkIn, $checkOut) {
-                $query->where('check_in', '<=', $checkOut)
-                      ->where('check_out', '>=', $checkIn);
+                $query->where('check_in', '<', $checkOut)
+                      ->where('check_out', '>', $checkIn);
             })
             ->exists();
 
@@ -78,19 +80,31 @@ class BookingController extends Controller
         return redirect()->back()->with('success', 'Booking submitted successfully! We will contact you soon.');
     }
 
-    public function getBlockedDates()
+    public function getBlockedDates(Request $request)
     {
-        $blockedRanges = Booking::where('status', 'approved')
-            ->select('check_in', 'check_out')
-            ->get()
+        $query = Booking::where('status', 'approved')
+->select('check_in', 'check_out', 'package_id');
+            
+        if ($request->package) {
+            $query->where('package_id', $request->package);
+        }
+            
+$blockedRanges = $query->get()
             ->map(function ($booking) {
+                $startDate = $booking->check_in->format('Y-m-d');
+                $checkoutDateObj = $booking->check_out->copy()->subDay();
+                $blockEndDate = $checkoutDateObj->format('Y-m-d');
+                if ($checkoutDateObj->lt($booking->check_in)) {
+                    $blockEndDate = $startDate;
+                }
                 return [
                     'start_date' => $booking->check_in->format('Y-m-d'),
-                    'end_date' => $booking->check_out->format('Y-m-d'),
+                    'end_date' => $blockEndDate,
                 ];
             })
             ->toArray();
 
         return response()->json($blockedRanges);
     }
+
 }
