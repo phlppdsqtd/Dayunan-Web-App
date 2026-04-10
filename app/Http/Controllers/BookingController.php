@@ -91,8 +91,12 @@ class BookingController extends Controller
             
 $blockedRanges = $query->get()
             ->map(function ($booking) {
-                $isTwelveHour = in_array($booking->package_id, [2, 4, 6]);
-                $blockEndDate = $isTwelveHour ? $booking->check_in->format('Y-m-d') : $booking->check_out->format('Y-m-d');
+                $startDate = $booking->check_in->format('Y-m-d');
+                $checkoutDateObj = $booking->check_out->copy()->subDay();
+                $blockEndDate = $checkoutDateObj->format('Y-m-d');
+                if ($checkoutDateObj->lt($booking->check_in)) {
+                    $blockEndDate = $startDate;
+                }
                 return [
                     'start_date' => $booking->check_in->format('Y-m-d'),
                     'end_date' => $blockEndDate,
