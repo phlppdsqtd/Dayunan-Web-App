@@ -69,12 +69,22 @@
             display: inline-block;
             text-decoration: none;
         }
-.btn-dayunan:hover {
+    .btn-dayunan:hover {
         background-color: #C04000 !important;
         border-color: #C04000 !important;
         color: white !important;
         transform: translateY(-2px); 
         box-shadow: 0 4px 12px rgba(192, 64, 0, 0.3); 
+    }
+    .flatpickr-day.disabled,
+    .flatpickr-day.disabled:hover,
+    .flatpickr-day.prevMonthDay.disabled,
+    .flatpickr-day.nextMonthDay.disabled {
+        background: #9aa0a6 !important;
+        color: #fff !important;
+        border-radius: 50% !important;
+        opacity: 1 !important;
+        cursor: not-allowed !important;
     }
     </style>
 </head>

@@ -13,10 +13,11 @@ class ManageBookingController extends Controller
 
             if ($user->role === 'admin') {
                 $bookings = Booking::with('package', 'user')
+                                    ->orderBy('package_id')
                                     ->orderBy('check_in', 'desc')
                                     ->get();
                 return view('manage.results', compact('bookings', 'user'));
-            }
+}
 
             $bookings = Booking::with('package')
                                 ->where(function($query) use ($user) {

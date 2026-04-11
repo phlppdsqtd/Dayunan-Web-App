@@ -33,90 +33,161 @@
 
                     @if($bookings->count() > 0)
                         <div class="booking-list text-start mt-4">
-                            @foreach($bookings as $booking)
-                                <div class="py-4 border-bottom border-light row-hover-effect">
 
-                                    <div class="row align-items-center">
-                                        <div class="col-md-4 mb-3 mb-md-0">
-                                            <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
-                                            <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
-                                                {{ \Carbon\Carbon::parse($booking->check_in)->format('M d, Y') }}
-                                                <span class="mx-2 opacity-50">&mdash;</span>
-                                                {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
-                                            </h5>
-                                            @auth
-                                                @if(auth()->user()->role === 'admin')
-                                                    <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                        {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }} &middot; {{ $booking->user?->email ?? $booking->guest_email }}
-                                                    </span>
-                                                @endif
-                                            @endauth
+                            @auth
+                                @if(auth()->user()->role === 'admin')
+                                    {{-- ADMIN: grouped by package --}}
+                                    @foreach($bookings->groupBy(fn($b) => $b->package->title ?? 'Unknown Package') as $packageTitle => $packageBookings)
+                                        <div class="mb-5">
+                                            <div class="package-group-header mb-3 pb-2">
+                                                <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.3rem; font-weight: 700;">ACCOMMODATION</span>
+                                                <h4 class="tenor-sans text-jungle mb-0" style="font-size: 1.1rem;">{{ $packageTitle }}</h4>
+                                            </div>
+
+                                            @foreach($packageBookings as $booking)
+                                                <div class="py-4 border-bottom border-light row-hover-effect">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-4 mb-3 mb-md-0">
+                                                            <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
+                                                            <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
+                                                                {{ \Carbon\Carbon::parse($booking->check_in)->format('M d, Y') }}
+                                                                <span class="mx-2 opacity-50">&mdash;</span>
+                                                                {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
+                                                            </h5>
+                                                            <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                                {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }} &middot; {{ $booking->user?->email ?? $booking->guest_email }}
+                                                            </span>
+                                                        </div>
+
+                                                        <div class="col-md-3 mb-3 mb-md-0">
+                                                            <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">TOTAL AMOUNT</span>
+                                                            <p class="khula text-jungle fw-bold mb-0" style="font-size: 1.2rem;">
+                                                                ₱{{ number_format($booking->total_price, 2) }}
+                                                            </p>
+                                                        </div>
+
+                                                        <div class="col-md-2 mb-3 mb-md-0 text-md-center">
+                                                            <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STATUS</span>
+                                                            <div class="status-badge status-{{ $booking->status }}">
+                                                                {{ strtoupper($booking->status ?? 'PENDING') }}
+                                                            </div>
+                                                            <p class="khula text-muted mt-1 mb-0" style="font-size: 0.55rem; letter-spacing: 0.1rem;">REF #{{ $booking->id }}</p>
+                                                        </div>
+
+                                                        <div class="col-md-3 text-md-end">
+                                                            <div class="d-flex flex-column gap-2 align-items-end">
+                                                                <form action="{{ route('manage.status', $booking) }}" method="POST" class="d-flex gap-2 align-items-center">
+                                                                    @csrf
+                                                                    @method('PATCH')
+                                                                    <select name="status" class="status-select khula">
+                                                                        <option value="pending" {{ $booking->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                                                        <option value="approved" {{ $booking->status === 'approved' ? 'selected' : '' }}>Approved</option>
+                                                                        <option value="cancelled" {{ $booking->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                                                    </select>
+                                                                    <button type="submit" class="btn-action update">Update</button>
+                                                                </form>
+                                                                <form action="{{ route('manage.destroy', $booking) }}" method="POST"
+                                                                      onsubmit="return confirm('Permanently delete this booking?')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="btn-action delete">Delete</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
                                         </div>
+                                    @endforeach
 
-                                        <div class="col-md-3 mb-3 mb-md-0">
-                                            <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">TOTAL AMOUNT</span>
-                                            <p class="khula text-jungle fw-bold mb-0" style="font-size: 1.2rem;">
-                                                ₱{{ number_format($booking->total_price, 2) }}
+                                @else
+                                    {{-- CUSTOMER: flat list --}}
+                                    @foreach($bookings as $booking)
+                                        <div class="py-4 border-bottom border-light row-hover-effect">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                    <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
+                                                    <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
+                                                        {{ \Carbon\Carbon::parse($booking->check_in)->format('M d, Y') }}
+                                                        <span class="mx-2 opacity-50">&mdash;</span>
+                                                        {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
+                                                    </h5>
+                                                </div>
+
+                                                <div class="col-md-3 mb-3 mb-md-0">
+                                                    <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">TOTAL AMOUNT</span>
+                                                    <p class="khula text-jungle fw-bold mb-0" style="font-size: 1.2rem;">
+                                                        ₱{{ number_format($booking->total_price, 2) }}
+                                                    </p>
+                                                </div>
+
+                                                <div class="col-md-2 mb-3 mb-md-0 text-md-center">
+                                                    <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STATUS</span>
+                                                    <div class="status-badge status-{{ $booking->status }}">
+                                                        {{ strtoupper($booking->status ?? 'PENDING') }}
+                                                    </div>
+                                                    <p class="khula text-muted mt-1 mb-0" style="font-size: 0.55rem; letter-spacing: 0.1rem;">REF #{{ $booking->id }}</p>
+                                                </div>
+
+                                                <div class="col-md-3 text-md-end">
+                                                    @if($booking->status === 'pending')
+                                                        <div class="d-flex flex-column gap-2 align-items-end">
+                                                            <a href="{{ route('manage.edit', $booking) }}" class="btn-action update">Edit</a>
+                                                            <form action="{{ route('manage.cancel', $booking) }}" method="POST"
+                                                                  onsubmit="return confirm('Cancel this booking?')">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                                <button type="submit" class="btn-action delete">Cancel</button>
+                                                            </form>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3 pt-3 border-top" style="border-color: rgba(216, 202, 184, 0.2) !important;">
+                                                <p class="tenor-sans text-terracotta mb-0" style="font-size: 0.9rem; font-weight: 600;">
+                                                    {{ $booking->package->title ?? 'Package Unavailable' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+
+                            @else
+                                {{-- GUEST: flat list --}}
+                                @foreach($bookings as $booking)
+                                    <div class="py-4 border-bottom border-light row-hover-effect">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-5 mb-3 mb-md-0">
+                                                <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
+                                                <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
+                                                    {{ \Carbon\Carbon::parse($booking->check_in)->format('M d, Y') }}
+                                                    <span class="mx-2 opacity-50">&mdash;</span>
+                                                    {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
+                                                </h5>
+                                            </div>
+                                            <div class="col-md-4 mb-3 mb-md-0">
+                                                <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">TOTAL AMOUNT</span>
+                                                <p class="khula text-jungle fw-bold mb-0" style="font-size: 1.2rem;">
+                                                    ₱{{ number_format($booking->total_price, 2) }}
+                                                </p>
+                                            </div>
+                                            <div class="col-md-3 text-md-end">
+                                                <div class="status-badge status-{{ $booking->status }}">
+                                                    {{ strtoupper($booking->status ?? 'PENDING') }}
+                                                </div>
+                                                <p class="khula text-muted mt-1 mb-0" style="font-size: 0.55rem; letter-spacing: 0.1rem;">REF #{{ $booking->id }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3 pt-3 border-top" style="border-color: rgba(216, 202, 184, 0.2) !important;">
+                                            <p class="tenor-sans text-terracotta mb-0" style="font-size: 0.9rem; font-weight: 600;">
+                                                {{ $booking->package->title ?? 'Package Unavailable' }}
                                             </p>
                                         </div>
-
-                                        <div class="col-md-2 mb-3 mb-md-0 text-md-center">
-                                            <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STATUS</span>
-                                            <div class="status-badge status-{{ $booking->status }}">
-                                                {{ strtoupper($booking->status ?? 'PENDING') }}
-                                            </div>
-                                            <p class="khula text-muted mt-1 mb-0" style="font-size: 0.55rem; letter-spacing: 0.1rem;">REF #{{ $booking->id }}</p>
-                                        </div>
-
-                                        <div class="col-md-3 text-md-end">
-                                            @auth
-                                                @if(auth()->user()->role === 'admin')
-                                                    {{-- ADMIN ACTIONS --}}
-                                                    <div class="d-flex flex-column gap-2 align-items-end">
-                                                        <form action="{{ route('manage.status', $booking) }}" method="POST" class="d-flex gap-2 align-items-center">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <select name="status" class="status-select khula">
-                                                                <option value="pending" {{ $booking->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                                                                <option value="approved" {{ $booking->status === 'approved' ? 'selected' : '' }}>Approved</option>
-                                                                <option value="cancelled" {{ $booking->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                                            </select>
-                                                            <button type="submit" class="btn-action update">Update</button>
-                                                        </form>
-                                                        <form action="{{ route('manage.destroy', $booking) }}" method="POST"
-                                                              onsubmit="return confirm('Permanently delete this booking?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn-action delete">Delete</button>
-                                                        </form>
-                                                    </div>
-                                                @elseif($booking->status === 'pending')
-                                                    {{-- CUSTOMER ACTIONS - only for pending --}}
-                                                    <div class="d-flex flex-column gap-2 align-items-end">
-                                                        <a href="{{ route('manage.edit', $booking) }}" class="btn-action update">Edit</a>
-                                                        <form action="{{ route('manage.cancel', $booking) }}" method="POST"
-                                                              onsubmit="return confirm('Cancel this booking?')">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" class="btn-action delete">Cancel</button>
-                                                        </form>
-                                                    </div>
-                                                @endif
-                                            @endauth
-                                        </div>
                                     </div>
+                                @endforeach
+                            @endauth
 
-                                    <div class="mt-3 pt-3 border-top" style="border-color: rgba(216, 202, 184, 0.2) !important;">
-                                        <p class="tenor-sans text-terracotta mb-1" style="font-size: 0.9rem; font-weight: 600;">
-                                            {{ $booking->package->title ?? 'Package Unavailable' }}
-                                        </p>
-                                        @if($booking->package && $booking->package->description)
-                                            <p class="khula text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;">{{ $booking->package->description }}</p>
-                                        @endif
-                                    </div>
-
-                                </div>
-                            @endforeach
                         </div>
                     @else
                         <div class="py-5">
@@ -159,6 +230,10 @@
     .cormorant { font-family: 'Cormorant Garamond', serif; }
     .row-hover-effect { transition: all 0.3s ease; }
     .row-hover-effect:hover { background-color: rgba(216, 202, 184, 0.1); padding-left: 10px; padding-right: 10px; }
+
+    .package-group-header {
+        border-bottom: 1px solid rgba(216, 202, 184, 0.5);
+    }
 
     .status-badge {
         display: inline-block;
