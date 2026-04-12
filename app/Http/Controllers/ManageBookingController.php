@@ -123,4 +123,30 @@ class ManageBookingController extends Controller
         $booking->delete();
         return back()->with('success', 'Booking permanently deleted.');
     }
+
+    public function adminEdit(Booking $booking)
+    {
+        return view('manage.admin-edit', compact('booking'));
+    }
+
+    public function adminUpdate(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'check_in'  => 'required|date',
+            'check_out' => 'required|date|after:check_in',
+            'guest_name'  => 'nullable|string|max:255',
+            'guest_email' => 'nullable|email|max:255',
+            'guest_phone' => 'nullable|string|max:20',
+        ]);
+
+        $booking->update([
+            'check_in'    => $request->check_in,
+            'check_out'   => $request->check_out,
+            'guest_name'  => $request->guest_name,
+            'guest_email' => $request->guest_email,
+            'guest_phone' => $request->guest_phone,
+        ]);
+
+        return redirect()->route('manage.index')->with('success', 'Booking updated successfully.');
+    }
 }

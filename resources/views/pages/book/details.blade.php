@@ -4,14 +4,17 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div class="text-center mb-5">
-                <a href="{{ url('/book') }}" class="btn btn-outline-secondary btn-sm mb-3">
+            <div class="mb-5">
+                <a href="{{ url('/book') }}" class="btn btn-outline-secondary btn-sm mb-4 d-inline-flex align-items-center">
                     <i class="bi bi-arrow-left me-2"></i> Back to accommodations
                 </a>
-                <span class="khula d-block mb-3" style="color: var(--terracotta);">CONFIRM & BOOK</span>
-                <p class="mx-auto text-muted" style="max-width: 600px; font-size: 1.1rem;">
-                    Confirm your accommodation details and complete your booking.
-                </p>
+                <div class="text-center">
+                    <span class="khula d-block mb-3" style="color: var(--terracotta);">CONFIRM & BOOK</span>
+                    <h1 class="tenor-sans text-jungle mb-3" style="font-size: 2.5rem; letter-spacing: 0.3rem;">Confirm & Book</h1>
+                    <p class="mx-auto text-muted" style="max-width: 600px; font-size: 1.1rem;">
+                        Confirm your accommodation details and complete your booking.
+                    </p>
+                </div>
             </div>
 
             @if(session('success'))
@@ -113,15 +116,15 @@
                                 <input type="text" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_name" name="guest_name" placeholder="Enter full name" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="guest_email" class="form-label fw-semibold text-terracotta mb-2">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_email" name="guest_email" placeholder="your@email.com" required>
-                            </div>
-                            <div class="col-md-6">
                                 <label for="guest_phone" class="form-label fw-semibold text-terracotta mb-2">Phone Number <span class="text-danger">*</span></label>
                                 <input type="tel" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_phone" name="guest_phone" placeholder="+63 123 465 789" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="guest_confirm_email" class="form-label fw-semibold text-terracotta mb-2">Confirm Email <span class="text-danger">*</span></label>
+                                <label for="guest_email" class="form-label fw-semibold text-terracotta mb-2">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_email" name="guest_email" placeholder="your@email.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="guest_confirm_email" class="form-label fw-semibold text-terracotta mb-2">Confirm Email Address <span class="text-danger">*</span></label>
                                 <input type="email" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_confirm_email" name="guest_confirm_email" placeholder="Retype your email" required>
                             </div>
                         </div>
@@ -130,8 +133,8 @@
                 @endif
 
                 <div class="text-center mt-5 pt-5">
-                    <button type="submit" id="submit-booking" class="btn btn-dayunan btn-lg px-6 py-4" style="font-size: 1.3rem; min-height: 65px; box-shadow: 0 8px 25px rgba(58,95,65,0.2);">
-                        <i class="bi bi-check-circle me-3" style="font-size: 1.4rem;"></i> Complete all fields first
+                    <button type="submit" id="submit-booking" class="btn btn-dayunan px-5 py-3" style="font-size: 0.8rem; box-shadow: 0 8px 25px rgba(58,95,65,0.2);">
+                        <i class="bi bi-check-circle me-2"></i> Complete all fields first
                     </button>
                 </div>
             </form>
@@ -145,26 +148,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function styleDisabledDays() {
         setTimeout(function() {
-            const fp = document.getElementById('check_in')._flatpickr;
-            if (!fp) return;
-
-            const today = new Date().toISOString().slice(0,10);
-
-            fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
-                const dateStr = day.dateObj ?
-                    day.dateObj.getFullYear() + '-' +
-                    String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
-                    String(day.dateObj.getDate()).padStart(2,'0') : null;
-                if (!dateStr) return;
-
-                blockedDates.forEach(function(range) {
-                    if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
-                        day.classList.add('disabled');
-                        day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                        day.addEventListener('mouseover', function() {
-                            this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                        });
-                    }
+            ['check_in', 'check_out'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (!el || !el._flatpickr || !el._flatpickr.days) return;
+                const fp = el._flatpickr;
+                const today = new Date().toISOString().slice(0,10);
+                fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
+                    const dateStr = day.dateObj ?
+                        day.dateObj.getFullYear() + '-' +
+                        String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
+                        String(day.dateObj.getDate()).padStart(2,'0') : null;
+                    if (!dateStr) return;
+                    blockedDates.forEach(function(range) {
+                        if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
+                            day.classList.add('disabled');
+                            day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
+                            day.addEventListener('mouseover', function() {
+                                this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
+                            });
+                        }
+                    });
                 });
             });
         }, 100);
@@ -185,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }));
 
             checkInPicker = flatpickr("#check_in", {
-                minDate: "today",
+                minDate: new Date().fp_incr(1),
                 dateFormat: "Y-m-d",
                 disable: blockedDates,
                 onReady: styleDisabledDays,
@@ -205,7 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             checkOutPicker = flatpickr("#check_out", {
                 dateFormat: "Y-m-d",
-                minDate: "today",
+                minDate: new Date().fp_incr(2),
+                disable: blockedDates,
                 clickOpens: false,
                 onReady: styleDisabledDays,
                 onMonthChange: styleDisabledDays,
@@ -275,11 +279,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (submitBtn) {
             submitBtn.disabled = !isValid;
             if (isValid) {
-                submitBtn.innerHTML = '<i class="bi bi-check-circle me-3" style="font-size: 1.4rem;"></i> Confirm &amp; Book Now';
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i> Confirm &amp; Book Now';
                 submitBtn.style.opacity = '1';
                 submitBtn.style.cursor = 'pointer';
             } else {
-                submitBtn.innerHTML = '<i class="bi bi-check-circle me-3" style="font-size: 1.4rem; opacity: 0.5;"></i> Complete all fields first';
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2" style="opacity:0.5;"></i> Complete all fields first';
                 submitBtn.style.opacity = '0.6';
                 submitBtn.style.cursor = 'not-allowed';
             }
@@ -315,7 +319,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 @media (max-width: 768px) {
     .package-detail-image { height: 280px; }
-    button[type="submit"] { font-size: 1.2rem !important; min-height: 55px !important; }
     .form-control-lg { font-size: 1rem !important; }
 }
 </style>

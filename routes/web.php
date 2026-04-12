@@ -27,9 +27,7 @@ Route::get('/book/details/{package}', [BookingController::class, 'details'])->na
 Route::post('/book', [BookingController::class, 'store'])->name('book.store');
 Route::get('/api/blocked-dates', [BookingController::class, 'getBlockedDates'])->name('api.blocked-dates');
 
-Route::get('/manage', function () {
-    return view('pages.manage');
-})->name('manage');
+Route::get('/manage', [ManageBookingController::class, 'index'])->name('manage');
 
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 
@@ -65,4 +63,7 @@ Route::middleware(['auth', 'role'])->group(function () {
     Route::patch('/manage-booking/{booking}/approve', [ManageBookingController::class, 'approve'])->name('manage.approve');
     Route::patch('/manage-booking/{booking}/status', [ManageBookingController::class, 'changeStatus'])->name('manage.status');
     Route::delete('/manage-booking/{booking}', [ManageBookingController::class, 'destroy'])->name('manage.destroy');
+    Route::get('/manage-booking/{booking}/admin-edit', [ManageBookingController::class, 'adminEdit'])->name('manage.admin.edit');
+    Route::put('/manage-booking/{booking}/admin-update', [ManageBookingController::class, 'adminUpdate'])->name('manage.admin.update');
 });
+
