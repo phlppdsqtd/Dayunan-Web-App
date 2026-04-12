@@ -288,7 +288,7 @@
                                         <span><strong>₱{{ number_format($package->price, 2) }}</strong></span>
                                     </div>
 
-                                    <a href="{{ url('/book?package_id=' . $package->id) }}" class="btn btn-dayunan w-100">Book Now</a>
+                                    <a href="{{ route('book.details', $package->id) }}" class="btn btn-dayunan w-100">Book Now</a>
                                 </div>
                             @endif
                         </div>
