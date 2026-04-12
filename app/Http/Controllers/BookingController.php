@@ -38,10 +38,9 @@ class BookingController extends Controller
 
         // Check for overlapping approved bookings (date-based)
         $existingBooking = Booking::where('status', 'approved')
-            ->where('package_id', $request->package_id)
             ->where(function($query) use ($checkIn, $checkOut) {
                 $query->where('check_in', '<', $checkOut)
-                      ->where('check_out', '>', $checkIn);
+                    ->where('check_out', '>', $checkIn);
             })
             ->exists();
 
@@ -85,10 +84,6 @@ class BookingController extends Controller
         $query = Booking::where('status', 'approved')
 ->select('check_in', 'check_out', 'package_id');
             
-        if ($request->package) {
-            $query->where('package_id', $request->package);
-        }
-            
 $blockedRanges = $query->get()
             ->map(function ($booking) {
                 $startDate = $booking->check_in->format('Y-m-d');
@@ -99,7 +94,7 @@ $blockedRanges = $query->get()
                 }
                 return [
                     'start_date' => $booking->check_in->format('Y-m-d'),
-                    'end_date' => $blockEndDate,
+                    'end_date' => $booking->check_out->subDay()->format('Y-m-d'),
                 ];
             })
             ->toArray();

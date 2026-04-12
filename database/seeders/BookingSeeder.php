@@ -51,8 +51,8 @@ class BookingSeeder extends Seeder
         ]);
 
         // 4. Another past approved booking
-        $checkIn4 = Carbon::now()->subDays(5);
-        $checkOut4 = Carbon::now()->subDays(4);
+        $checkIn4 = Carbon::now()->subDays(8);
+        $checkOut4 = Carbon::now()->subDays(7);
         Booking::create([
             'user_id' => 3, 
             'package_id' => 4, 
