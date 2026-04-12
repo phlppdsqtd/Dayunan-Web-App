@@ -27,7 +27,7 @@
                             @enderror
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-2">
                             <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-OUT DATE</label>
                             <input type="text" id="admin_check_out" name="check_out"
                                    class="form-control aesthetic-input py-3"
@@ -35,6 +35,12 @@
                             @error('check_out')
                                 <span class="khula text-danger" style="font-size: 0.65rem;">{{ $message }}</span>
                             @enderror
+                        </div>
+
+                        <div id="overlap-warning" style="display:none;" class="mb-4 p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08);">
+                            <span class="khula" style="font-size:0.65rem; letter-spacing:0.1rem; color:#B08D57;">
+                                WARNING: THESE DATES OVERLAP AN EXISTING APPROVED BOOKING. YOU CAN STILL SAVE, BUT THIS WILL CAUSE A DOUBLE BOOKING.
+                            </span>
                         </div>
 
                         <div class="mb-4">
@@ -99,11 +105,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             });
-            // Re-apply selected highlight
             fp.days.querySelectorAll('.flatpickr-day.selected').forEach(function(day) {
                 day.style.cssText = 'background:#3A5F41 !important; color:#fff !important; border-radius:50% !important; border: 2px solid #3A5F41 !important; opacity:1 !important; cursor:pointer !important;';
             });
         }, 100);
+    }
+
+    function checkOverlap(checkIn, checkOut) {
+        return blockedDates.some(function(range) {
+            return checkIn < range.to && checkOut > range.from;
+        });
+    }
+
+    function getDateStr(date) {
+        return date.getFullYear() + '-' +
+            String(date.getMonth()+1).padStart(2,'0') + '-' +
+            String(date.getDate()).padStart(2,'0');
+    }
+
+    function updateOverlapWarning() {
+        if (checkInPicker && checkOutPicker && checkInPicker.selectedDates[0] && checkOutPicker.selectedDates[0]) {
+            const checkIn = getDateStr(checkInPicker.selectedDates[0]);
+            const checkOut = getDateStr(checkOutPicker.selectedDates[0]);
+            const warningEl = document.getElementById('overlap-warning');
+            if (checkOverlap(checkIn, checkOut)) {
+                warningEl.style.display = 'block';
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
     }
 
     fetch(`{{ route("api.blocked-dates") }}`)
@@ -125,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         checkOutPicker.set('minDate', tomorrow);
                         styleDisabledDays(checkOutPicker);
                     }
+                    updateOverlapWarning();
                 }
             });
 
@@ -134,8 +165,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 onMonthChange: function() { styleDisabledDays(this); },
                 onChange: function(selectedDates, dateStr, instance) {
                     styleDisabledDays(instance);
+                    updateOverlapWarning();
                 }
             });
+
+            // Check on page load if existing dates already overlap
+            updateOverlapWarning();
         });
 });
 </script>
@@ -167,6 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #fff !important;
         border-color: #3A5F41 !important;
         opacity: 0.8 !important;
+    }
+    #overlap-warning {
+        border-left: 3px solid #B08D57;
+        background: rgba(176, 141, 87, 0.08);
+        padding: 10px 15px;
     }
 </style>
 @endsection
