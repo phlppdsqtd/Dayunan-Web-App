@@ -88,7 +88,7 @@ class BookingController extends Controller
                 return [
                     'booking_id' => $booking->id,
                     'start_date' => $booking->check_in->format('Y-m-d'),
-                    'end_date'   => $booking->check_out->subDay()->format('Y-m-d'),
+                    'end_date'   => $booking->check_out->format('Y-m-d'),
                 ];
             })
             ->toArray();

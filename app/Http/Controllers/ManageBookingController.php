@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\User;
+use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
 class ManageBookingController extends Controller
 {
@@ -15,7 +16,8 @@ class ManageBookingController extends Controller
                 $bookings = Booking::with('package', 'user')
                                     ->orderBy('check_in', 'desc')
                                     ->get();
-                return view('manage.results', compact('bookings', 'user'));
+                $packages = Package::where('is_active', true)->orderBy('title')->get();
+                return view('manage.results', compact('bookings', 'user', 'packages'));
             }
 
             $bookings = Booking::with('package')

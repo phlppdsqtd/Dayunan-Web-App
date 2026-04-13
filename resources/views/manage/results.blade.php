@@ -43,8 +43,8 @@
                                 </select>
                                 <select id="filter-package" class="filter-select khula" onchange="filterBookings()">
                                     <option value="">ALL PACKAGES</option>
-                                    @foreach($bookings->pluck('package.title')->unique()->filter() as $title)
-                                        <option value="{{ strtolower($title) }}">{{ strtoupper($title) }}</option>
+                                    @foreach($packages as $package)
+                                        <option value="{{ strtolower($package->title) }}">{{ strtoupper($package->title) }}</option>
                                     @endforeach
                                 </select>
                                 <select id="sort-date" class="filter-select khula" onchange="filterBookings()">
