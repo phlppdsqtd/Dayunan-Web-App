@@ -13,11 +13,10 @@ class ManageBookingController extends Controller
 
             if ($user->role === 'admin') {
                 $bookings = Booking::with('package', 'user')
-                                    ->orderBy('package_id')
                                     ->orderBy('check_in', 'desc')
                                     ->get();
                 return view('manage.results', compact('bookings', 'user'));
-}
+            }
 
             $bookings = Booking::with('package')
                                 ->where(function($query) use ($user) {
@@ -115,7 +114,7 @@ class ManageBookingController extends Controller
             'status' => 'required|in:pending,approved,cancelled',
         ]);
         $booking->update(['status' => $request->status]);
-        return back()->with('success', 'Booking status updated.');
+        return redirect()->route('manage.admin.edit', $booking)->with('success', 'Status updated.');
     }
 
     public function destroy(Booking $booking)
@@ -132,8 +131,8 @@ class ManageBookingController extends Controller
     public function adminUpdate(Request $request, Booking $booking)
     {
         $request->validate([
-            'check_in'  => 'required|date',
-            'check_out' => 'required|date|after:check_in',
+            'check_in'    => 'required|date',
+            'check_out'   => 'required|date|after:check_in',
             'guest_name'  => 'nullable|string|max:255',
             'guest_email' => 'nullable|email|max:255',
             'guest_phone' => 'nullable|string|max:20',

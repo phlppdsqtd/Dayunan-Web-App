@@ -91,7 +91,17 @@
                                 <input type="text" class="form-control form-control-lg border-terracotta shadow-sm flatpickr-input" id="check_in" name="check_in" placeholder="Select check-in" readonly required style="background: white;">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold text-terracotta mb-2">Check-out Date <small class="text-muted">(by 12NN)</small> <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold text-terracotta mb-2">
+                                    Check-out Date
+                                    <small class="text-muted">
+                                        @if(str_contains($package->title, '12 Hours'))
+                                            (by 2:00 AM)
+                                        @else
+                                            (by 12NN)
+                                        @endif
+                                    </small>
+                                    <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control form-control-lg border-terracotta shadow-sm flatpickr-input" id="check_out" name="check_out" placeholder="Select check-out" readonly required>
                                 <div id="date-overlap-warning" style="display:none;" class="mt-2">
                                     <span class="khula text-terracotta" style="font-size:0.65rem; letter-spacing:0.1rem;">
@@ -100,8 +110,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="alert alert-info mt-3 mb-5 small">
-                            <i class="bi bi-check-circle me-2"></i> Past dates blocked • Approved bookings blocked • Daily rates.
+                        <div class="mt-3 mb-2 small p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem;">
+                            Bronze-outlined dates are fully booked and cannot be selected as check-in. You may check out on a booked date.
                         </div>
                     </div>
                 </div>
@@ -146,28 +156,62 @@
 document.addEventListener('DOMContentLoaded', function() {
     let checkInPicker, checkOutPicker, blockedDates = [];
 
-    function styleDisabledDays() {
+    function styleCheckInDays() {
         setTimeout(function() {
-            ['check_in', 'check_out'].forEach(function(id) {
-                const el = document.getElementById(id);
-                if (!el || !el._flatpickr || !el._flatpickr.days) return;
-                const fp = el._flatpickr;
-                const today = new Date().toISOString().slice(0,10);
-                fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
-                    const dateStr = day.dateObj ?
-                        day.dateObj.getFullYear() + '-' +
-                        String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
-                        String(day.dateObj.getDate()).padStart(2,'0') : null;
-                    if (!dateStr) return;
-                    blockedDates.forEach(function(range) {
-                        if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
+            const el = document.getElementById('check_in');
+            if (!el || !el._flatpickr || !el._flatpickr.days) return;
+            const fp = el._flatpickr;
+            const today = new Date().toISOString().slice(0,10);
+
+            fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
+                const dateStr = day.dateObj ?
+                    day.dateObj.getFullYear() + '-' +
+                    String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
+                    String(day.dateObj.getDate()).padStart(2,'0') : null;
+                if (!dateStr) return;
+                blockedDates.forEach(function(range) {
+                    if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
+                        day.classList.add('disabled');
+                        day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
+                        day.addEventListener('mouseover', function() {
+                            this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
+                        });
+                    }
+                });
+            });
+        }, 100);
+    }
+
+    function styleCheckOutDays() {
+        setTimeout(function() {
+            const el = document.getElementById('check_out');
+            if (!el || !el._flatpickr || !el._flatpickr.days) return;
+            const fp = el._flatpickr;
+            const today = new Date().toISOString().slice(0,10);
+
+            const checkIn = checkInPicker && checkInPicker.selectedDates[0] ?
+                checkInPicker.selectedDates[0].getFullYear() + '-' +
+                String(checkInPicker.selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
+                String(checkInPicker.selectedDates[0].getDate()).padStart(2,'0') : null;
+
+            fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
+                const dateStr = day.dateObj ?
+                    day.dateObj.getFullYear() + '-' +
+                    String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
+                    String(day.dateObj.getDate()).padStart(2,'0') : null;
+                if (!dateStr) return;
+
+                blockedDates.forEach(function(range) {
+                    if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
+                        const isValidCheckout = checkIn && dateStr === range.from;
+                        if (!isValidCheckout) {
                             day.classList.add('disabled');
                             day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
                             day.addEventListener('mouseover', function() {
                                 this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
                             });
                         }
-                    });
+                    }
                 });
             });
         }, 100);
@@ -191,8 +235,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 minDate: new Date().fp_incr(1),
                 dateFormat: "Y-m-d",
                 disable: blockedDates,
-                onReady: styleDisabledDays,
-                onMonthChange: styleDisabledDays,
+                onReady: styleCheckInDays,
+                onMonthChange: styleCheckInDays,
                 onChange: function(selectedDates) {
                     if (selectedDates[0]) {
                         const tomorrow = new Date(selectedDates[0]);
@@ -200,7 +244,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         checkOutPicker.set('minDate', tomorrow);
                         checkOutPicker.setDate('');
                         document.getElementById('date-overlap-warning').style.display = 'none';
-                        styleDisabledDays();
+                        styleCheckInDays();
+                        styleCheckOutDays();
                         validateForm();
                     }
                 }
@@ -209,10 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
             checkOutPicker = flatpickr("#check_out", {
                 dateFormat: "Y-m-d",
                 minDate: new Date().fp_incr(2),
-                disable: blockedDates,
                 clickOpens: false,
-                onReady: styleDisabledDays,
-                onMonthChange: styleDisabledDays,
+                onReady: styleCheckOutDays,
+                onMonthChange: styleCheckOutDays,
                 onChange: function(selectedDates) {
                     if (selectedDates[0] && checkInPicker.selectedDates[0]) {
                         const checkIn = checkInPicker.selectedDates[0].getFullYear() + '-' +
@@ -230,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             warningEl.style.display = 'none';
                         }
                     }
-                    styleDisabledDays();
+                    styleCheckOutDays();
                     validateForm();
                 }
             });
@@ -243,7 +287,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkOutPicker.open();
             });
 
-            styleDisabledDays();
+            styleCheckInDays();
+            styleCheckOutDays();
         });
 
     const form = document.getElementById('booking-details-form');
