@@ -92,7 +92,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-terracotta mb-2">
-                                    Check-out Date 
+                                    Check-out Date
                                     <small class="text-muted">
                                         @if(str_contains($package->title, '12 Hours'))
                                             (by 2:00 AM)
@@ -109,6 +109,9 @@
                                     </span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="mt-3 mb-2 small p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem;">
+                            Bronze-outlined dates are fully booked and cannot be selected as check-in. You may check out on a booked date.
                         </div>
                     </div>
                 </div>
@@ -200,8 +203,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 blockedDates.forEach(function(range) {
                     if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
-                        // Only show bronze if selecting this date as checkout would overlap
-                        // i.e. it's not just the first day of the blocked range (which is valid checkout)
                         const isValidCheckout = checkIn && dateStr === range.from;
                         if (!isValidCheckout) {
                             day.classList.add('disabled');
