@@ -52,7 +52,35 @@
                                     <option value="asc">DATE: OLDEST FIRST</option>
                                 </select>
                             </div>
+                        @else
+                            <div class="mb-4 d-flex gap-2 flex-wrap justify-content-center">
+                                <input type="text" id="user-search-ref" class="filter-select khula" placeholder="SEARCH REF #" oninput="filterUserRows()" style="width: 130px;">
+                                <select id="user-filter-status" class="filter-select khula" onchange="filterUserRows()">
+                                    <option value="">ALL STATUS</option>
+                                    <option value="pending">PENDING</option>
+                                    <option value="approved">APPROVED</option>
+                                    <option value="cancelled">CANCELLED</option>
+                                </select>
+                                <select id="user-sort-date" class="filter-select khula" onchange="filterUserRows()">
+                                    <option value="desc">DATE: NEWEST FIRST</option>
+                                    <option value="asc">DATE: OLDEST FIRST</option>
+                                </select>
+                            </div>
                         @endif
+                    @else
+                        <div class="mb-4 d-flex gap-2 flex-wrap justify-content-center">
+                            <input type="text" id="user-search-ref" class="filter-select khula" placeholder="SEARCH REF #" oninput="filterUserRows()" style="width: 130px;">
+                            <select id="user-filter-status" class="filter-select khula" onchange="filterUserRows()">
+                                <option value="">ALL STATUS</option>
+                                <option value="pending">PENDING</option>
+                                <option value="approved">APPROVED</option>
+                                <option value="cancelled">CANCELLED</option>
+                            </select>
+                            <select id="user-sort-date" class="filter-select khula" onchange="filterUserRows()">
+                                <option value="desc">DATE: NEWEST FIRST</option>
+                                <option value="asc">DATE: OLDEST FIRST</option>
+                            </select>
+                        </div>
                     @endauth
 
                     @if($bookings->count() > 0)
@@ -67,7 +95,7 @@
                                             data-package="{{ strtolower($booking->package->title ?? '') }}"
                                             data-date="{{ $booking->check_in->timestamp }}"
                                             data-ref="{{ $booking->id }}">
-                                            <div class="row align-items-center">
+                                            <div class="row align-items-start">
                                                 <div class="col-md-4 mb-3 mb-md-0">
                                                     <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
                                                     <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
@@ -75,6 +103,17 @@
                                                         <span class="mx-2 opacity-50">&mdash;</span>
                                                         {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
                                                     </h5>
+                                                        <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                            {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
+                                                        </span>
+                                                        <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                            {{ $booking->user?->email ?? $booking->guest_email ?? '' }}
+                                                        </span>
+                                                    @if($booking->user?->mobile ?? $booking->guest_phone)
+                                                        <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                            {{ $booking->user?->mobile ?? $booking->guest_phone }}
+                                                        </span>
+                                                    @endif
                                                     <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
                                                         {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }} &middot; {{ $booking->user?->email ?? $booking->guest_email }}
                                                     </span>
@@ -82,12 +121,22 @@
 
                                                 <div class="col-md-3 mb-3 mb-md-0">
                                                     <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">PACKAGE</span>
-                                                    <p class="tenor-sans text-jungle mb-0" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
+                                                    <p class="tenor-sans text-jungle mb-1" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
                                                         {{ $booking->package->title ?? 'Package Unavailable' }}
                                                     </p>
-                                                    <p class="khula text-jungle fw-bold mb-0" style="font-size: 1rem;">
+                                                    <p class="khula text-jungle fw-bold mb-2" style="font-size: 1rem;">
                                                         ₱{{ number_format($booking->total_price, 2) }}
                                                     </p>
+                                                    @if($booking->package && $booking->package->description)
+                                                        @php
+                                                            $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $booking->package->description)));
+                                                        @endphp
+                                                        <ul class="khula text-muted mb-0 ps-3" style="font-size: 0.7rem; line-height: 1.8;">
+                                                            @foreach($lines as $line)
+                                                                <li>{{ preg_replace('/^[^\w\d\(]+/', '', $line) }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                    @endif
                                                 </div>
 
                                                 <div class="col-md-2 mb-3 mb-md-0 text-md-center">
@@ -116,8 +165,8 @@
                                 @else
                                     {{-- CUSTOMER: flat list --}}
                                     @foreach($bookings as $booking)
-                                        <div class="py-4 border-bottom border-light row-hover-effect">
-                                            <div class="row align-items-center">
+                                        <div class="py-4 border-bottom border-light row-hover-effect user-row" data-ref="{{ $booking->id }}" data-status="{{ $booking->status }}" data-date="{{ $booking->check_in->timestamp }}">
+                                            <div class="row align-items-start">
                                                 <div class="col-md-4 mb-3 mb-md-0">
                                                     <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
                                                     <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
@@ -125,16 +174,38 @@
                                                         <span class="mx-2 opacity-50">&mdash;</span>
                                                         {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
                                                     </h5>
+                                                        <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                            {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
+                                                        </span>
+                                                        <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                            {{ $booking->user?->email ?? $booking->guest_email ?? '' }}
+                                                        </span>
+                                                        @if($booking->user?->mobile ?? $booking->guest_phone)
+                                                            <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                                {{ $booking->user?->mobile ?? $booking->guest_phone }}
+                                                        </span>
+                                                    @endif
                                                 </div>
 
                                                 <div class="col-md-3 mb-3 mb-md-0">
                                                     <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">PACKAGE</span>
-                                                    <p class="tenor-sans text-jungle mb-0" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
+                                                    <p class="tenor-sans text-jungle mb-1" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
                                                         {{ $booking->package->title ?? 'Package Unavailable' }}
                                                     </p>
-                                                    <p class="khula text-jungle fw-bold mb-0" style="font-size: 1rem;">
+                                                    <p class="khula text-jungle fw-bold mb-2" style="font-size: 1rem;">
                                                         ₱{{ number_format($booking->total_price, 2) }}
                                                     </p>
+                                                    @if($booking->package && $booking->package->description)
+                                                        @php
+                                                            $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $booking->package->description)));
+                                                        @endphp
+                                                        <a href="#" class="khula d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem; text-decoration:none; color: #3A5F41;" onclick="toggleDetails(this); return false;">VIEW DETAILS ▾</a>
+                                                        <ul class="khula text-muted mb-0 ps-3 package-details" style="font-size: 0.7rem; line-height: 1.8; display:none;">
+                                                            @foreach($lines as $line)
+                                                                <li>{{ preg_replace('/^[^\w\d\(]+/', '', $line) }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                    @endif
                                                 </div>
 
                                                 <div class="col-md-2 mb-3 mb-md-0 text-md-center">
@@ -158,7 +229,7 @@
                                                         </div>
                                                     @endif
                                                 </div>
-                                            </div>                               
+                                            </div>
                                         </div>
                                     @endforeach
                                 @endif
@@ -166,8 +237,8 @@
                             @else
                                 {{-- GUEST: flat list --}}
                                 @foreach($bookings as $booking)
-                                    <div class="py-4 border-bottom border-light row-hover-effect">
-                                        <div class="row align-items-center">
+                                    <div class="py-4 border-bottom border-light row-hover-effect user-row" data-ref="{{ $booking->id }}" data-status="{{ $booking->status }}" data-date="{{ $booking->check_in->timestamp }}">
+                                        <div class="row align-items-start">
                                             <div class="col-md-4 mb-3 mb-md-0">
                                                 <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
                                                 <h5 class="tenor-sans text-jungle mb-0" style="font-size: 1rem; letter-spacing: 0.1rem;">
@@ -175,15 +246,37 @@
                                                     <span class="mx-2 opacity-50">&mdash;</span>
                                                     {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
                                                 </h5>
+                                                    <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                    {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
+                                                </span>
+                                                <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                    {{ $booking->user?->email ?? $booking->guest_email ?? '' }}
+                                                </span>
+                                                @if($booking->user?->mobile ?? $booking->guest_phone)
+                                                    <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                        {{ $booking->user?->mobile ?? $booking->guest_phone }}
+                                                    </span>
+                                                @endif
                                             </div>
                                             <div class="col-md-3 mb-3 mb-md-0">
                                                 <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">PACKAGE</span>
-                                                <p class="tenor-sans text-jungle mb-0" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
+                                                <p class="tenor-sans text-jungle mb-1" style="font-size: 0.8rem; letter-spacing: 0.05rem;">
                                                     {{ $booking->package->title ?? 'Package Unavailable' }}
                                                 </p>
-                                                <p class="khula text-jungle fw-bold mb-0" style="font-size: 1rem;">
+                                                <p class="khula text-jungle fw-bold mb-2" style="font-size: 1rem;">
                                                     ₱{{ number_format($booking->total_price, 2) }}
                                                 </p>
+                                                @if($booking->package && $booking->package->description)
+                                                    @php
+                                                        $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $booking->package->description)));
+                                                    @endphp
+                                                    <a href="#" class="khula d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem; text-decoration:none; color: #3A5F41;" onclick="toggleDetails(this); return false;">VIEW DETAILS ▾</a>
+                                                    <ul class="khula text-muted mb-0 ps-3 package-details" style="font-size: 0.7rem; line-height: 1.8; display:none;">
+                                                        @foreach($lines as $line)
+                                                            <li>{{ preg_replace('/^[^\w\d\(]+/', '', $line) }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @endif
                                             </div>
                                             <div class="col-md-2 mb-3 mb-md-0 text-md-center">
                                                 <span class="khula text-muted d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STATUS</span>
@@ -254,6 +347,42 @@ function filterBookings() {
         const refMatch = !ref || rowRef.includes(ref);
         row.style.display = (statusMatch && pkgMatch && refMatch) ? '' : 'none';
     });
+}
+
+function filterUserRows() {
+    const ref = document.getElementById('user-search-ref')?.value.toLowerCase().replace('#', '');
+    const status = document.getElementById('user-filter-status')?.value.toLowerCase();
+    const sort = document.getElementById('user-sort-date')?.value;
+
+    const rows = Array.from(document.querySelectorAll('.user-row'));
+
+    if (sort === 'asc') {
+        rows.sort((a, b) => parseInt(a.dataset.date) - parseInt(b.dataset.date));
+    } else {
+        rows.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
+    }
+
+    const container = document.getElementById('booking-list');
+    rows.forEach(row => container.appendChild(row));
+
+    rows.forEach(row => {
+        const rowRef = row.dataset.ref || '';
+        const rowStatus = row.dataset.status || '';
+        const refMatch = !ref || rowRef.includes(ref);
+        const statusMatch = !status || rowStatus === status;
+        row.style.display = (refMatch && statusMatch) ? '' : 'none';
+    });
+}
+
+function toggleDetails(el) {
+    const ul = el.nextElementSibling;
+    if (ul.style.display === 'none') {
+        ul.style.display = 'block';
+        el.textContent = 'HIDE DETAILS ▴';
+    } else {
+        ul.style.display = 'none';
+        el.textContent = 'VIEW DETAILS ▾';
+    }
 }
 </script>
 
