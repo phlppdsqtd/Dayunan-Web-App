@@ -107,16 +107,13 @@
                                                             {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
                                                         </span>
                                                         <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                            {{ $booking->user?->email ?? $booking->guest_email ?? '' }}
+                                                            {{ $booking->user?->email ?? $booking->guest_email }}
                                                         </span>
                                                     @if($booking->user?->mobile ?? $booking->guest_phone)
                                                         <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
                                                             {{ $booking->user?->mobile ?? $booking->guest_phone }}
                                                         </span>
-                                                    @endif
-                                                    <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                        {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }} &middot; {{ $booking->user?->email ?? $booking->guest_email }}
-                                                    </span>
+                                                    @endif                                               
                                                 </div>
 
                                                 <div class="col-md-3 mb-3 mb-md-0">
@@ -131,7 +128,8 @@
                                                         @php
                                                             $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $booking->package->description)));
                                                         @endphp
-                                                        <ul class="khula text-muted mb-0 ps-3" style="font-size: 0.7rem; line-height: 1.8;">
+                                                        <a href="#" class="khula d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem; text-decoration:none; color: #3A5F41;" onclick="toggleDetails(this); return false;">VIEW DETAILS ▾</a>
+                                                        <ul class="khula text-muted mb-0 ps-3 package-details" style="font-size: 0.7rem; line-height: 1.8; display:none;">
                                                             @foreach($lines as $line)
                                                                 <li>{{ preg_replace('/^[^\w\d\(]+/', '', $line) }}</li>
                                                             @endforeach
@@ -308,7 +306,7 @@
                             </a>
                         @endguest
                         @auth
-                            <a href="{{ url('/') }}" class="khula text-jungle text-decoration-none small" style="letter-spacing: 0.2rem;">
+                            <a href="{{ url('/') }}" class="khula text-decoration-none small" style="letter-spacing: 0.2rem; color: #3A5F41;">
                                 <i class="bi bi-arrow-left me-2"></i> RETURN TO HOME
                             </a>
                         @endauth
