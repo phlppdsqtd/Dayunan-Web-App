@@ -9,10 +9,10 @@
                     <i class="bi bi-arrow-left me-2"></i> Back to accommodations
                 </a>
                 <div class="text-center">
-                    <span class="khula d-block mb-3" style="color: var(--terracotta);">CONFIRM & BOOK</span>
+                    
                     <h1 class="tenor-sans text-jungle mb-3" style="font-size: 2.5rem; letter-spacing: 0.3rem;">Confirm & Book</h1>
                     <p class="mx-auto text-muted" style="max-width: 600px; font-size: 1.1rem;">
-                        Confirm your accommodation details and complete your booking.
+                        Verify your accommodation details and complete your booking.
                     </p>
                 </div>
             </div>

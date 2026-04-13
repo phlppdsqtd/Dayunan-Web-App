@@ -114,13 +114,19 @@
     box-shadow: 0 20px 40px rgba(58,95,65,0.15);
 }
 .package-image-wrap {
-    height: 200px;
+    height: 200px !important;
+    flex-shrink: 0 !important;
     overflow: hidden;
+    display: flex;
+    align-items: stretch;
 }
-.package-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.package-image-wrap img.package-img {
+    height: 200px !important;
+    width: 100% !important;
+    flex: 1 !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
 }
 .package-select-label {
     display: flex !important;
