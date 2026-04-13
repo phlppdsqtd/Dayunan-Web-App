@@ -50,9 +50,9 @@ class BookingSeeder extends Seeder
             'total_price' => $this->calculatePrice(5, $checkIn3, $checkOut3),
         ]);
 
-        // 4. Another past approved booking
-        $checkIn4 = Carbon::now()->subDays(8);
-        $checkOut4 = Carbon::now()->subDays(7);
+        // 4. josiah sample 1
+        $checkIn4 = Carbon::now()->addDays(12);
+        $checkOut4 = Carbon::now()->addDays(13);
         Booking::create([
             'user_id' => 3, 
             'package_id' => 4, 
@@ -73,11 +73,20 @@ class BookingSeeder extends Seeder
             'status' => 'approved',
             'total_price' => $this->calculatePrice(1, $checkIn5, $checkOut5),
         ]);
+
+        // 6. josiah sample 3
+        $checkIn6 = Carbon::now()->addDays(2);
+        $checkOut6 = Carbon::now()->addDays(3);
+        Booking::create([
+            'user_id' => 3, 
+            'package_id' => 3, 
+            'check_in' => $checkIn6->toDateString(),
+            'check_out' => $checkOut6->toDateString(),
+            'status' => 'approved',
+            'total_price' => $this->calculatePrice(1, $checkIn6, $checkOut6),
+        ]);
     }
 
-    /**
-     * Helper function to calculate total price based on dates and package price.
-     */
     private function calculatePrice($packageId, Carbon $checkIn, Carbon $checkOut)
     {
         // Find the specific package in the database to get its exact price

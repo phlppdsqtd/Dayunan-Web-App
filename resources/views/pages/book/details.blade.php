@@ -111,7 +111,7 @@
                             </div>
                         </div>
                         <div class="mt-3 mb-2 small p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem;">
-                            Bronze-outlined dates are fully booked and cannot be selected as check-in. You may check out on a booked date.
+                            Encircled dates are booked and cannot be selected as check-in. You may check out on a booked date.
                         </div>
                     </div>
                 </div>
