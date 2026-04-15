@@ -12,6 +12,7 @@
                     <form action="{{ route('manage.update', $booking) }}" method="POST" class="mt-4 px-lg-4">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="check_out" id="check_out_hidden" value="{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}">
 
                         <div class="mb-4 text-start">
                             <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-IN DATE</label>
@@ -25,21 +26,33 @@
 
                         <div class="mb-2 text-start">
                             <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-OUT DATE</label>
-                            <input type="text" id="check_out" name="check_out"
-                                   class="form-control aesthetic-input py-3"
-                                   value="{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}" required>
-                            @error('check_out')
-                                <span class="khula text-danger" style="font-size: 0.65rem;">{{ $message }}</span>
-                            @enderror
+                            <div id="checkout-selection">
+                                <div class="dropdown w-100">
+                                    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start aesthetic-input py-3"
+                                            type="button"
+                                            id="stayLengthDropdown"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            style="background: transparent; border: none; border-bottom: 1px solid var(--sandstorm-beige); border-radius: 0; font-family: 'Khula', sans-serif; font-size: 1rem;">
+                                        {{ \Carbon\Carbon::parse($booking->check_in)->diffInDays(\Carbon\Carbon::parse($booking->check_out)) }} days ({{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }})
+                                    </button>
+                                    <ul class="dropdown-menu w-100" id="stayLengthOptions" style="max-height: 300px; overflow-y: auto;">
+                                        <li><a class="dropdown-item disabled" href="#">Select check-in first</a></li>
+                                    </ul>
+                                </div>
+                                <div id="overlap-warning" style="display:none;" class="mt-3">
+                                    <span class="khula" style="font-size:0.65rem; letter-spacing:0.1rem; color:#B08D57;">
+                                        SELECTED DATES OVERLAP AN EXISTING BOOKING. PLEASE CHOOSE DIFFERENT DATES.
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div id="overlap-warning" style="display:none;" class="mb-4 text-start">
-                            <span class="khula" style="font-size:0.65rem; letter-spacing:0.1rem; color:#B08D57;">
-                                SELECTED DATES OVERLAP AN EXISTING BOOKING. PLEASE CHOOSE DIFFERENT DATES.
-                            </span>
+                        <div class="mt-3 mb-4 small p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem;">
+                            Encircled dates are booked and cannot be selected as check-in. Stay max 7 days or until next booking.
                         </div>
 
-                        <button type="submit" id="save-btn" class="btn btn-dayunan w-100 py-3 tenor-sans" style="letter-spacing: 0.2rem;">
+                        <button type="submit" id="save-btn" class="btn btn-dayunan w-100 py-3 tenor-sans" style="letter-spacing: 0.2rem;" disabled>
                             Save Changes
                         </button>
 
@@ -55,7 +68,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let blockedDates = [], checkInPicker, checkOutPicker;
+    let blockedDates = [], checkInPicker;
 
     function styleCheckInDays() {
         setTimeout(function() {
@@ -82,49 +95,74 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    function styleCheckOutDays() {
-        setTimeout(function() {
-            const el = document.getElementById('check_out');
-            if (!el || !el._flatpickr || !el._flatpickr.days) return;
-            const fp = el._flatpickr;
-            const today = new Date().toISOString().slice(0,10);
-            const checkIn = checkInPicker && checkInPicker.selectedDates[0] ?
-                checkInPicker.selectedDates[0].getFullYear() + '-' +
-                String(checkInPicker.selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                String(checkInPicker.selectedDates[0].getDate()).padStart(2,'0') : null;
-
-            fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
-                const dateStr = day.dateObj ?
-                    day.dateObj.getFullYear() + '-' +
-                    String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
-                    String(day.dateObj.getDate()).padStart(2,'0') : null;
-                if (!dateStr) return;
-                blockedDates.forEach(function(range) {
-                    if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
-                        const isValidCheckout = checkIn && dateStr === range.from;
-                        if (!isValidCheckout) {
-                            day.classList.add('disabled');
-                            day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                            day.addEventListener('mouseover', function() {
-                                this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                            });
-                        }
-                    }
-                });
-            });
-        }, 100);
-    }
-
-    function checkOverlap(checkIn, checkOut) {
+    function checkOverlap(checkInStr, checkOutStr) {
         return blockedDates.some(function(range) {
-            return checkIn < range.to && checkOut > range.from;
+            return checkInStr < range.to && checkOutStr > range.from;
         });
     }
 
-    function getDateStr(date) {
-        return date.getFullYear() + '-' +
-            String(date.getMonth()+1).padStart(2,'0') + '-' +
-            String(date.getDate()).padStart(2,'0');
+    function daysBetween(start, end) {
+        const s = new Date(start + 'T00:00:00');
+        const e = new Date(end + 'T00:00:00');
+        return Math.floor((e - s) / (1000 * 60 * 60 * 24));
+    }
+
+    function generateCheckOutDropdown(checkInStr) {
+        const dropdownButton = document.getElementById('stayLengthDropdown');
+        const optionsContainer = document.getElementById('stayLengthOptions');
+
+        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
+        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
+
+        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+        const maxDays = maxN;
+
+        optionsContainer.innerHTML = '';
+
+        if (maxDays < 1) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.textContent = 'No available dates';
+            document.getElementById('check_out_hidden').value = '';
+            updateSaveBtn();
+            return;
+        }
+
+        for (let i = 1; i <= maxDays; i++) {
+            const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
+            const checkoutStr = checkoutDate.toISOString().slice(0,10);
+            const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = '#';
+            a.textContent = label;
+            a.setAttribute('data-checkout-date', checkoutStr);
+            a.setAttribute('data-days', i);
+
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const selectedDate = this.getAttribute('data-checkout-date');
+                const selectedDays = this.getAttribute('data-days');
+
+                if (checkOverlap(checkInStr, selectedDate)) {
+                    document.getElementById('overlap-warning').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('overlap-warning').style.display = 'none';
+                document.getElementById('check_out_hidden').value = selectedDate;
+                dropdownButton.textContent = `${selectedDays} days (${selectedDate})`;
+
+                optionsContainer.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
+                a.classList.add('active');
+
+                updateSaveBtn();
+            });
+
+            li.appendChild(a);
+            optionsContainer.appendChild(li);
+        }
     }
 
     fetch(`{{ route("api.blocked-dates") }}`)
@@ -134,57 +172,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 .filter(range => range.booking_id !== {{ $booking->id }})
                 .map(range => ({ from: range.start_date, to: range.end_date }));
 
+            const disableRanges = blockedDates.map(range => ({
+                from: new Date(range.from + 'T00:00:00'),
+                to: new Date(range.to + 'T00:00:00')
+            }));
+
             checkInPicker = flatpickr("#check_in", {
                 minDate: new Date().fp_incr(1),
                 dateFormat: "Y-m-d",
                 defaultDate: "{{ \Carbon\Carbon::parse($booking->check_in)->format('Y-m-d') }}",
-                disable: blockedDates,
+                disable: disableRanges,
                 onReady: styleCheckInDays,
                 onMonthChange: styleCheckInDays,
                 onChange: function(selectedDates) {
                     styleCheckInDays();
                     if (selectedDates[0]) {
-                        const tomorrow = new Date(selectedDates[0]);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        checkOutPicker.set('minDate', tomorrow);
-                        checkOutPicker.setDate('');
-                        styleCheckOutDays();
+                        const checkInStr = selectedDates[0].getFullYear() + '-' +
+                            String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
+                            String(selectedDates[0].getDate()).padStart(2,'0');
+                        document.getElementById('check_out_hidden').value = '';
                         document.getElementById('overlap-warning').style.display = 'none';
+                        generateCheckOutDropdown(checkInStr);
                     }
                     updateSaveBtn();
                 }
             });
 
-            checkOutPicker = flatpickr("#check_out", {
-                dateFormat: "Y-m-d",
-                defaultDate: "{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}",
-                onReady: styleCheckOutDays,
-                onMonthChange: styleCheckOutDays,
-                onChange: function(selectedDates) {
-                    styleCheckOutDays();
-                    if (selectedDates[0] && checkInPicker.selectedDates[0]) {
-                        const checkIn = getDateStr(checkInPicker.selectedDates[0]);
-                        const checkOut = getDateStr(selectedDates[0]);
-                        const warningEl = document.getElementById('overlap-warning');
-                        if (checkOverlap(checkIn, checkOut)) {
-                            warningEl.style.display = 'block';
-                            checkOutPicker.setDate('');
-                        } else {
-                            warningEl.style.display = 'none';
-                        }
-                    }
-                    updateSaveBtn();
-                }
-            });
-
+            // Generate dropdown for existing check-in
+            generateCheckOutDropdown("{{ \Carbon\Carbon::parse($booking->check_in)->format('Y-m-d') }}");
             styleCheckInDays();
-            styleCheckOutDays();
+
+            // Re-select existing checkout in dropdown
+            const existingCheckout = "{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}";
+            setTimeout(function() {
+                const options = document.querySelectorAll('#stayLengthOptions .dropdown-item');
+                options.forEach(function(opt) {
+                    if (opt.getAttribute('data-checkout-date') === existingCheckout) {
+                        opt.classList.add('active');
+                        document.getElementById('stayLengthDropdown').textContent = opt.textContent;
+                    }
+                });
+            }, 200);
         });
 
     function updateSaveBtn() {
         const saveBtn = document.getElementById('save-btn');
         const checkInVal = document.getElementById('check_in').value;
-        const checkOutVal = document.getElementById('check_out').value;
+        const checkOutVal = document.getElementById('check_out_hidden').value;
         const warning = document.getElementById('overlap-warning');
         if (checkInVal && checkOutVal && warning.style.display !== 'block') {
             saveBtn.disabled = false;
@@ -194,6 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.style.opacity = '0.6';
         }
     }
+
+    updateSaveBtn();
 });
 </script>
 
@@ -219,6 +255,20 @@ document.addEventListener('DOMContentLoaded', function() {
     .tenor-sans { font-family: 'Tenor Sans', sans-serif; text-transform: uppercase; }
     .khula { font-family: 'Khula', sans-serif; }
     .cormorant { font-family: 'Cormorant Garamond', serif; }
+    .dropdown-menu {
+        font-family: inherit !important;
+        border-color: var(--terracotta);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .dropdown-item {
+        font-family: inherit !important;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        transition: all 0.2s ease;
+    }
+    .dropdown-item:hover { background-color: #3A5F41; color: white; }
+    .dropdown-item.active { background-color: #3A5F41; color: white; }
+    .dropdown-item.disabled { opacity: 0.5; cursor: not-allowed; }
     .flatpickr-day:not(.disabled):not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled):hover {
         background: #3A5F41 !important;
         color: #fff !important;

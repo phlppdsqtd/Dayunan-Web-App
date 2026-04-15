@@ -48,8 +48,9 @@
                                     @endforeach
                                 </select>
                                 <select id="sort-date" class="filter-select khula" onchange="filterBookings()">
-                                    <option value="desc">DATE: NEWEST FIRST</option>
-                                    <option value="asc">DATE: OLDEST FIRST</option>
+                                    <option value="recent">RECENTLY BOOKED</option>
+                                    <option value="asc">CHECK-IN: ASCENDING</option>
+                                    <option value="desc">CHECK-IN: DESCENDING</option>
                                 </select>
                             </div>
                         @else
@@ -62,8 +63,9 @@
                                     <option value="cancelled">CANCELLED</option>
                                 </select>
                                 <select id="user-sort-date" class="filter-select khula" onchange="filterUserRows()">
-                                    <option value="desc">DATE: NEWEST FIRST</option>
-                                    <option value="asc">DATE: OLDEST FIRST</option>
+                                    <option value="recent">RECENTLY BOOKED</option>
+                                    <option value="asc">CHECK-IN: ASCENDING</option>
+                                    <option value="desc">CHECK-IN: DESCENDING</option>
                                 </select>
                             </div>
                         @endif
@@ -77,8 +79,9 @@
                                 <option value="cancelled">CANCELLED</option>
                             </select>
                             <select id="user-sort-date" class="filter-select khula" onchange="filterUserRows()">
-                                <option value="desc">DATE: NEWEST FIRST</option>
-                                <option value="asc">DATE: OLDEST FIRST</option>
+                                <option value="recent">RECENTLY BOOKED</option>
+                                <option value="asc">CHECK-IN: ASCENDING</option>
+                                <option value="desc">CHECK-IN: DESCENDING</option>
                             </select>
                         </div>
                     @endauth
@@ -94,6 +97,7 @@
                                             data-status="{{ $booking->status }}"
                                             data-package="{{ strtolower($booking->package->title ?? '') }}"
                                             data-date="{{ $booking->check_in->timestamp }}"
+                                            data-created="{{ $booking->created_at->timestamp }}"
                                             data-ref="{{ $booking->id }}">
                                             <div class="row align-items-start">
                                                 <div class="col-md-4 mb-3 mb-md-0">
@@ -103,17 +107,17 @@
                                                         <span class="mx-2 opacity-50">&mdash;</span>
                                                         {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
                                                     </h5>
-                                                        <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                            {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
-                                                        </span>
-                                                        <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                            {{ $booking->user?->email ?? $booking->guest_email }}
-                                                        </span>
+                                                    <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                        {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
+                                                    </span>
+                                                    <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                        {{ $booking->user?->email ?? $booking->guest_email }}
+                                                    </span>
                                                     @if($booking->user?->mobile ?? $booking->guest_phone)
                                                         <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
                                                             {{ $booking->user?->mobile ?? $booking->guest_phone }}
                                                         </span>
-                                                    @endif                                               
+                                                    @endif
                                                 </div>
 
                                                 <div class="col-md-3 mb-3 mb-md-0">
@@ -163,7 +167,11 @@
                                 @else
                                     {{-- CUSTOMER: flat list --}}
                                     @foreach($bookings as $booking)
-                                        <div class="py-4 border-bottom border-light row-hover-effect user-row" data-ref="{{ $booking->id }}" data-status="{{ $booking->status }}" data-date="{{ $booking->check_in->timestamp }}">
+                                        <div class="py-4 border-bottom border-light row-hover-effect user-row"
+                                            data-ref="{{ $booking->id }}"
+                                            data-status="{{ $booking->status }}"
+                                            data-date="{{ $booking->check_in->timestamp }}"
+                                            data-created="{{ $booking->created_at->timestamp }}">
                                             <div class="row align-items-start">
                                                 <div class="col-md-4 mb-3 mb-md-0">
                                                     <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
@@ -172,15 +180,15 @@
                                                         <span class="mx-2 opacity-50">&mdash;</span>
                                                         {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
                                                     </h5>
-                                                        <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                            {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
-                                                        </span>
+                                                    <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                        {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
+                                                    </span>
+                                                    <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                        {{ $booking->user?->email ?? $booking->guest_email ?? '' }}
+                                                    </span>
+                                                    @if($booking->user?->mobile ?? $booking->guest_phone)
                                                         <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                            {{ $booking->user?->email ?? $booking->guest_email ?? '' }}
-                                                        </span>
-                                                        @if($booking->user?->mobile ?? $booking->guest_phone)
-                                                            <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
-                                                                {{ $booking->user?->mobile ?? $booking->guest_phone }}
+                                                            {{ $booking->user?->mobile ?? $booking->guest_phone }}
                                                         </span>
                                                     @endif
                                                 </div>
@@ -235,7 +243,11 @@
                             @else
                                 {{-- GUEST: flat list --}}
                                 @foreach($bookings as $booking)
-                                    <div class="py-4 border-bottom border-light row-hover-effect user-row" data-ref="{{ $booking->id }}" data-status="{{ $booking->status }}" data-date="{{ $booking->check_in->timestamp }}">
+                                    <div class="py-4 border-bottom border-light row-hover-effect user-row"
+                                        data-ref="{{ $booking->id }}"
+                                        data-status="{{ $booking->status }}"
+                                        data-date="{{ $booking->check_in->timestamp }}"
+                                        data-created="{{ $booking->created_at->timestamp }}">
                                         <div class="row align-items-start">
                                             <div class="col-md-4 mb-3 mb-md-0">
                                                 <span class="khula text-terracotta d-block mb-1" style="font-size: 0.6rem; letter-spacing: 0.2rem; font-weight: 700;">STAY DATES</span>
@@ -244,7 +256,7 @@
                                                     <span class="mx-2 opacity-50">&mdash;</span>
                                                     {{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y') }}
                                                 </h5>
-                                                    <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
+                                                <span class="khula text-muted d-block mt-1" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
                                                     {{ $booking->user?->name ?? $booking->guest_name ?? 'Guest' }}
                                                 </span>
                                                 <span class="khula text-muted d-block" style="font-size: 0.6rem; letter-spacing: 0.1rem;">
@@ -329,6 +341,8 @@ function filterBookings() {
 
     if (sort === 'asc') {
         rows.sort((a, b) => parseInt(a.dataset.date) - parseInt(b.dataset.date));
+    } else if (sort === 'recent') {
+        rows.sort((a, b) => parseInt(b.dataset.created) - parseInt(a.dataset.created));
     } else {
         rows.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
     }
@@ -356,6 +370,8 @@ function filterUserRows() {
 
     if (sort === 'asc') {
         rows.sort((a, b) => parseInt(a.dataset.date) - parseInt(b.dataset.date));
+    } else if (sort === 'recent') {
+        rows.sort((a, b) => parseInt(b.dataset.created) - parseInt(a.dataset.created));
     } else {
         rows.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
     }

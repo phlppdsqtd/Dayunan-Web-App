@@ -5,6 +5,8 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+
 class ManageBookingController extends Controller
 {
     public function index()
@@ -14,7 +16,7 @@ class ManageBookingController extends Controller
 
             if ($user->role === 'admin') {
                 $bookings = Booking::with('package', 'user')
-                                    ->orderBy('check_in', 'desc')
+                                    ->orderBy('created_at', 'desc')
                                     ->get();
                 $packages = Package::where('is_active', true)->orderBy('title')->get();
                 return view('manage.results', compact('bookings', 'user', 'packages'));
@@ -23,9 +25,9 @@ class ManageBookingController extends Controller
             $bookings = Booking::with('package')
                                 ->where(function($query) use ($user) {
                                     $query->where('user_id', $user->id)
-                                          ->orWhere('guest_email', $user->email);
+                                        ->orWhere('guest_email', $user->email);
                                 })
-                                ->orderBy('check_in', 'desc')
+                                ->orderBy('created_at', 'desc')
                                 ->get();
             return view('manage.results', compact('bookings', 'user'));
         }
@@ -39,13 +41,11 @@ class ManageBookingController extends Controller
         ]);
         $email = $request->email;
         $bookings = Booking::with('package')
-                            ->where(function($query) use ($email) {
-                                $query->whereHas('user', function($q) use ($email) {
-                                    $q->where('email', $email);
-                                })
-                                ->orWhere('guest_email', $email);
+                            ->where(function($query) use ($user) {
+                                $query->where('user_id', $user->id)
+                                    ->orWhere('guest_email', $user->email);
                             })
-                            ->orderBy('check_in', 'desc')
+                            ->orderBy('created_at', 'desc')
                             ->get();
         if ($bookings->isEmpty()) {
             return back()->with('error', 'We couldn\'t find any records associated with that email.');
@@ -97,6 +97,23 @@ class ManageBookingController extends Controller
             'check_in'  => 'required|date|after:today',
             'check_out' => 'required|date|after:check_in',
         ]);
+
+        $checkIn = Carbon::parse($request->check_in)->startOfDay();
+        $checkOut = Carbon::parse($request->check_out)->startOfDay();
+
+        $existingBooking = Booking::where('status', 'approved')
+            ->where('package_id', $booking->package_id)
+            ->where('id', '!=', $booking->id)
+            ->where(function($query) use ($checkIn, $checkOut) {
+                $query->where('check_in', '<', $checkOut)
+                      ->where('check_out', '>', $checkIn);
+            })
+            ->exists();
+
+        if ($existingBooking) {
+            return redirect()->back()->with('error', 'Selected dates overlap with an existing approved booking.');
+        }
+
         $booking->update([
             'check_in'  => $request->check_in,
             'check_out' => $request->check_out,
@@ -139,6 +156,22 @@ class ManageBookingController extends Controller
             'guest_email' => 'nullable|email|max:255',
             'guest_phone' => 'nullable|string|max:20',
         ]);
+
+        $checkIn = Carbon::parse($request->check_in)->startOfDay();
+        $checkOut = Carbon::parse($request->check_out)->startOfDay();
+
+        $existingBooking = Booking::where('status', 'approved')
+            ->where('package_id', $booking->package_id)
+            ->where('id', '!=', $booking->id)
+            ->where(function($query) use ($checkIn, $checkOut) {
+                $query->where('check_in', '<', $checkOut)
+                      ->where('check_out', '>', $checkIn);
+            })
+            ->exists();
+
+        if ($existingBooking) {
+            return redirect()->back()->with('error', 'Selected dates overlap with an existing approved booking.');
+        }
 
         $booking->update([
             'check_in'    => $request->check_in,
