@@ -102,16 +102,23 @@
                                     </small>
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm flatpickr-input" id="check_out" name="check_out" placeholder="Select check-out" readonly required>
-                                <div id="date-overlap-warning" style="display:none;" class="mt-2">
-                                    <span class="khula text-terracotta" style="font-size:0.65rem; letter-spacing:0.1rem;">
-                                        SELECTED DATES OVERLAP AN EXISTING BOOKING. PLEASE CHOOSE DIFFERENT DATES.
-                                    </span>
+                                <div id="checkout-selection" style="display:none;">
+                                    <div class="checkout-radios-group mt-3">
+                                        <label class="form-label fw-semibold text-terracotta mb-3 d-block" style="font-size: 0.9rem;">
+                                            Stay Length <span class="text-danger">*</span>
+                                        </label>
+                                        <div id="checkout-radios"></div>
+                                    </div>
+                                    <div id="date-overlap-warning" style="display:none;" class="mt-3">
+                                        <span class="khula text-terracotta" style="font-size:0.65rem; letter-spacing:0.1rem;">
+                                            Selected stay overlaps an existing booking. Choose shorter stay.
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-3 mb-2 small p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem;">
-                            Encircled dates are booked and cannot be selected as check-in. You may check out on a booked date.
+                            Encircled dates are booked and cannot be selected as check-in. Stay max 7 days or until next booking.
                         </div>
                     </div>
                 </div>
@@ -154,7 +161,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let checkInPicker, checkOutPicker, blockedDates = [];
+
+    let checkInPicker, blockedDates = [];
 
     function styleCheckInDays() {
         setTimeout(function() {
@@ -182,48 +190,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    function styleCheckOutDays() {
-        setTimeout(function() {
-            const el = document.getElementById('check_out');
-            if (!el || !el._flatpickr || !el._flatpickr.days) return;
-            const fp = el._flatpickr;
-            const today = new Date().toISOString().slice(0,10);
-
-            const checkIn = checkInPicker && checkInPicker.selectedDates[0] ?
-                checkInPicker.selectedDates[0].getFullYear() + '-' +
-                String(checkInPicker.selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                String(checkInPicker.selectedDates[0].getDate()).padStart(2,'0') : null;
-
-            fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
-                const dateStr = day.dateObj ?
-                    day.dateObj.getFullYear() + '-' +
-                    String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
-                    String(day.dateObj.getDate()).padStart(2,'0') : null;
-                if (!dateStr) return;
-
-                blockedDates.forEach(function(range) {
-                    if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
-                        const isValidCheckout = checkIn && dateStr === range.from;
-                        if (!isValidCheckout) {
-                            day.classList.add('disabled');
-                            day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                            day.addEventListener('mouseover', function() {
-                                this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                            });
-                        }
-                    }
-                });
-            });
-        }, 100);
-    }
-
-    function checkOverlap(checkIn, checkOut) {
+    function checkOverlap(checkInStr, checkOutStr) {
         return blockedDates.some(function(range) {
-            return checkIn < range.to && checkOut > range.from;
+            return checkInStr < range.to && checkOutStr > range.from;
         });
     }
 
-    fetch(`{{ route("api.blocked-dates") }}`)
+    function daysBetween(start, end) {
+        const s = new Date(start + 'T00:00:00');
+        const e = new Date(end + 'T00:00:00');
+        return Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    function generateCheckOutRadios(checkInStr) {
+        const container = document.getElementById('checkout-radios');
+        const selection = document.getElementById('checkout-selection');
+        if (!checkInStr) {
+            selection.style.display = 'none';
+            return;
+        }
+
+        // Find cap: earliest blocked.from > checkInStr
+        const futureBlocked = blockedDates.filter(range => range.from > checkInStr).sort((a,b) => a.from.localeCompare(b.from));
+        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
+        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+
+        let html = '';
+        for (let i = 1; i <= maxN; i++) {
+            const checkoutStr = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000).toISOString().slice(0,10);
+            const label = i === 1 ? '1 day' : `${i} days`;
+            const checked = i === 1 ? 'checked' : '';
+            html += `
+                <div class="form-check form-check-inline me-4 mb-2">
+                    <input class="form-check-input checkout-radio" type="radio" name="check_out" id="checkout_${i}" value="${checkoutStr}" ${checked} required>
+                    <label class="form-check-label fw-semibold text-terracotta" style="cursor:pointer; font-size:1rem;" for="checkout_${i}">
+                        +${label} (${checkoutStr})
+                    </label>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        selection.style.display = 'block';
+
+        // Add event listeners
+        document.querySelectorAll('.checkout-radio').forEach(radio => {
+            radio.addEventListener('change', validateForm);
+        });
+        validateForm();
+    }
+
+
+    fetch(`{{ route("api.blocked-dates", $package->id) }}`)
+
         .then(r => r.json())
         .then(data => {
             blockedDates = data.map(range => ({
@@ -239,57 +257,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 onMonthChange: styleCheckInDays,
                 onChange: function(selectedDates) {
                     if (selectedDates[0]) {
-                        const tomorrow = new Date(selectedDates[0]);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        checkOutPicker.set('minDate', tomorrow);
-                        checkOutPicker.setDate('');
+                        const checkInStr = selectedDates[0].getFullYear() + '-' +
+                            String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
+                            String(selectedDates[0].getDate()).padStart(2,'0');
+                        generateCheckOutRadios(checkInStr);
                         document.getElementById('date-overlap-warning').style.display = 'none';
                         styleCheckInDays();
-                        styleCheckOutDays();
                         validateForm();
                     }
                 }
             });
 
-            checkOutPicker = flatpickr("#check_out", {
-                dateFormat: "Y-m-d",
-                minDate: new Date().fp_incr(2),
-                clickOpens: false,
-                onReady: styleCheckOutDays,
-                onMonthChange: styleCheckOutDays,
-                onChange: function(selectedDates) {
-                    if (selectedDates[0] && checkInPicker.selectedDates[0]) {
-                        const checkIn = checkInPicker.selectedDates[0].getFullYear() + '-' +
-                            String(checkInPicker.selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                            String(checkInPicker.selectedDates[0].getDate()).padStart(2,'0');
-                        const checkOut = selectedDates[0].getFullYear() + '-' +
-                            String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                            String(selectedDates[0].getDate()).padStart(2,'0');
-
-                        const warningEl = document.getElementById('date-overlap-warning');
-                        if (checkOverlap(checkIn, checkOut)) {
-                            warningEl.style.display = 'block';
-                            checkOutPicker.setDate('');
-                        } else {
-                            warningEl.style.display = 'none';
-                        }
-                    }
-                    styleCheckOutDays();
-                    validateForm();
-                }
-            });
-
-            document.getElementById('check_out').addEventListener('click', function() {
-                if (!checkInPicker.selectedDates[0]) {
-                    alert('Please select check-in date first');
-                    return;
-                }
-                checkOutPicker.open();
-            });
-
             styleCheckInDays();
-            styleCheckOutDays();
         });
+
+        // Initial radios if preloaded (unlikely)
+        const initialCheckIn = document.getElementById('check_in').value;
+        if (initialCheckIn) generateCheckOutRadios(initialCheckIn);
+
 
     const form = document.getElementById('booking-details-form');
     const guestName = document.getElementById('guest_name');
@@ -303,9 +288,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (field) field.classList.remove('is-invalid');
         });
         const checkInVal = document.getElementById('check_in').value;
-        const checkOutVal = document.getElementById('check_out').value;
+        const selectedRadio = document.querySelector('input[name="check_out"]:checked');
+        const checkOutVal = selectedRadio ? selectedRadio.value : '';
+        const warningEl = document.getElementById('date-overlap-warning');
+        const hasWarning = warningEl.style.display === 'block';
         if (!checkInVal || !checkOutVal) isValid = false;
-        if (document.getElementById('date-overlap-warning').style.display === 'block') isValid = false;
+        if (hasWarning) isValid = false;
+        if (checkInVal && checkOutVal && checkOverlap(checkInVal, checkOutVal)) {
+            warningEl.style.display = 'block';
+            isValid = false;
+        } else {
+            warningEl.style.display = 'none';
+        }
         if (guestName && !guestName.value.trim()) { guestName.classList.add('is-invalid'); isValid = false; }
         if (guestEmail) {
             if (!guestEmail.value.trim()) { guestEmail.classList.add('is-invalid'); isValid = false; }

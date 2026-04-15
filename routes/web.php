@@ -25,7 +25,8 @@ Route::get('/explore', [PackageController::class, 'explore'])->name('explore');
 Route::get('/book', [BookingController::class, 'create'])->name('book');
 Route::get('/book/details/{package}', [BookingController::class, 'details'])->name('book.details');
 Route::post('/book', [BookingController::class, 'store'])->name('book.store');
-Route::get('/api/blocked-dates', [BookingController::class, 'getBlockedDates'])->name('api.blocked-dates');
+Route::get('/api/blocked-dates/{package?}', [BookingController::class, 'getBlockedDates'])->name('api.blocked-dates');
+
 
 Route::get('/manage', [ManageBookingController::class, 'index'])->name('manage');
 
