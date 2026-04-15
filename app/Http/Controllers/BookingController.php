@@ -26,7 +26,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'package_id' => 'required|exists:packages,id',
-'check_in' => 'required|date|after_or_equal:today',
+            'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'guest_name' => 'required_if:user_id,null|string|max:255',
             'guest_email' => 'required_if:user_id,null|email|max:255',
@@ -36,15 +36,13 @@ class BookingController extends Controller
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->startOfDay();
 
-        // Check for overlapping approved bookings (date-based)
+        // Check for overlapping approved bookings (whole villa - no package filter)
         $existingBooking = Booking::where('status', 'approved')
-            ->where('package_id', $request->package_id)
             ->where(function($query) use ($checkIn, $checkOut) {
                 $query->where('check_in', '<', $checkOut)
                     ->where('check_out', '>', $checkIn);
             })
             ->exists();
-
 
         if ($existingBooking) {
             return redirect()->back()->with('error', 'Selected dates overlap with an existing approved booking.');
@@ -81,19 +79,12 @@ class BookingController extends Controller
         return redirect()->back()->with('success', 'Booking submitted successfully! We will contact you soon.');
     }
 
-
-
     public function getBlockedDates(Package $package = null, Request $request)
     {
-        $query = Booking::where('status', 'approved')
-            ->select('id', 'check_in', 'check_out', 'package_id');
-        
-        $packageId = $package ? $package->id : ($request->package_id ?? null);
-        if ($packageId) {
-            $query->where('package_id', $packageId);
-        }
-
-        $blockedRanges = $query->get()
+        // Whole villa blocking - no package filter
+        $blockedRanges = Booking::where('status', 'approved')
+            ->select('id', 'check_in', 'check_out', 'package_id')
+            ->get()
             ->map(function ($booking) {
                 return [
                     'booking_id' => $booking->id,
@@ -105,7 +96,4 @@ class BookingController extends Controller
 
         return response()->json($blockedRanges);
     }
-
-
-
 }

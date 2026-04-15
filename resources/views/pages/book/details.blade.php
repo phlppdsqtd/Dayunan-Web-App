@@ -216,23 +216,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Find cap: earliest blocked.from > checkInStr
-        const futureBlocked = blockedDates.filter(range => range.from > checkInStr).sort((a,b) => a.from.localeCompare(b.from));
+        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
         const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
 
         const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
-        const maxDays = Math.max(2, maxN);
+        const maxDays = maxN;
 
         // Clear and populate dropdown
         optionsContainer.innerHTML = '';
-        
-        if (maxDays < 2) {
+
+        if (maxDays < 1) {
             optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
             dropdownButton.innerHTML = 'No available dates <span class="float-end">↗</span>';
             selection.style.display = 'block';
             return;
         }
 
-        for (let i = 2; i <= maxDays; i++) {
+        for (let i = 1; i <= maxDays; i++) {
             const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
             const checkoutStr = checkoutDate.toISOString().slice(0,10);
             const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
@@ -285,10 +285,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 to: range.end_date
             }));
 
+            const disableRanges = blockedDates.map(range => ({
+                from: new Date(range.from + 'T00:00:00'),
+                to: new Date(range.to + 'T00:00:00')
+            }));
+
             checkInPicker = flatpickr("#check_in", {
                 minDate: new Date().fp_incr(1),
                 dateFormat: "Y-m-d",
-                disable: blockedDates,
+                disable: disableRanges,
                 onReady: styleCheckInDays,
                 onMonthChange: styleCheckInDays,
                 onChange: function(selectedDates) {
