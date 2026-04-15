@@ -36,6 +36,7 @@
             <form action="{{ route('book.store') }}" method="POST" id="booking-details-form">
                 @csrf
                 <input type="hidden" name="package_id" value="{{ $package->id }}">
+                <input type="hidden" name="check_out" id="check_out_hidden" value="">
 
                 <div class="dayunan-card mb-5">
                     <div class="row g-0 h-100">
@@ -93,21 +94,23 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-terracotta mb-2">
                                     Check-out Date
-                                    <small class="text-muted">
-                                        @if(str_contains($package->title, '12 Hours'))
-                                            (by 2:00 AM)
-                                        @else
-                                            (by 12NN)
-                                        @endif
-                                    </small>
+                                    <small class="text-muted">(by 12:00 Noon)</small>
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div id="checkout-selection" style="display:none;">
-                                    <div class="checkout-radios-group mt-3">
-                                        <label class="form-label fw-semibold text-terracotta mb-3 d-block" style="font-size: 0.9rem;">
-                                            Stay Length <span class="text-danger">*</span>
-                                        </label>
-                                        <div id="checkout-radios"></div>
+                                    <!-- Custom Dropdown Container -->
+                                    <div class="dropdown w-100" id="custom-dropdown-container">
+                                        <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start form-control-lg" 
+                                                type="button" 
+                                                id="stayLengthDropdown" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false"
+                                                style="background: white; border-color: var(--terracotta);">
+                                            Select stay length...
+                                        </button>
+                                        <ul class="dropdown-menu w-100" id="stayLengthOptions" style="max-height: 300px; overflow-y: auto;">
+                                            <li><a class="dropdown-item disabled" href="#">Select check-in first</a></li>
+                                        </ul>
                                     </div>
                                     <div id="date-overlap-warning" style="display:none;" class="mt-3">
                                         <span class="khula text-terracotta" style="font-size:0.65rem; letter-spacing:0.1rem;">
@@ -199,12 +202,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function daysBetween(start, end) {
         const s = new Date(start + 'T00:00:00');
         const e = new Date(end + 'T00:00:00');
-        return Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
+        return Math.floor((e - s) / (1000 * 60 * 60 * 24));
     }
 
-    function generateCheckOutRadios(checkInStr) {
-        const container = document.getElementById('checkout-radios');
+    function generateCheckOutDropdown(checkInStr) {
         const selection = document.getElementById('checkout-selection');
+        const dropdownButton = document.getElementById('stayLengthDropdown');
+        const optionsContainer = document.getElementById('stayLengthOptions');
+        
         if (!checkInStr) {
             selection.style.display = 'none';
             return;
@@ -213,35 +218,66 @@ document.addEventListener('DOMContentLoaded', function() {
         // Find cap: earliest blocked.from > checkInStr
         const futureBlocked = blockedDates.filter(range => range.from > checkInStr).sort((a,b) => a.from.localeCompare(b.from));
         const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
+
         const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+        const maxDays = Math.max(2, maxN);
 
-        let html = '';
-        for (let i = 1; i <= maxN; i++) {
-            const checkoutStr = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000).toISOString().slice(0,10);
-            const label = i === 1 ? '1 day' : `${i} days`;
-            const checked = i === 1 ? 'checked' : '';
-            html += `
-                <div class="form-check form-check-inline me-4 mb-2">
-                    <input class="form-check-input checkout-radio" type="radio" name="check_out" id="checkout_${i}" value="${checkoutStr}" ${checked} required>
-                    <label class="form-check-label fw-semibold text-terracotta" style="cursor:pointer; font-size:1rem;" for="checkout_${i}">
-                        +${label} (${checkoutStr})
-                    </label>
-                </div>
-            `;
+        // Clear and populate dropdown
+        optionsContainer.innerHTML = '';
+        
+        if (maxDays < 2) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.innerHTML = 'No available dates <span class="float-end">↗</span>';
+            selection.style.display = 'block';
+            return;
         }
-        container.innerHTML = html;
-        selection.style.display = 'block';
 
-        // Add event listeners
-        document.querySelectorAll('.checkout-radio').forEach(radio => {
-            radio.addEventListener('change', validateForm);
-        });
+        for (let i = 2; i <= maxDays; i++) {
+            const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
+            const checkoutStr = checkoutDate.toISOString().slice(0,10);
+            const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
+            
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = '#';
+            a.textContent = label;
+            a.setAttribute('data-checkout-date', checkoutStr);
+            a.setAttribute('data-days', i);
+            
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const selectedDate = this.getAttribute('data-checkout-date');
+                const selectedDays = this.getAttribute('data-days');
+                
+                // Check for overlap
+                if (checkOverlap(checkInStr, selectedDate)) {
+                    document.getElementById('date-overlap-warning').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('date-overlap-warning').style.display = 'none';
+                document.getElementById('check_out_hidden').value = selectedDate;
+                dropdownButton.innerHTML = `${selectedDays} days (${selectedDate}) <span class="float-end">↗</span>`;
+                
+                // Update active state
+                optionsContainer.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                a.classList.add('active');
+                
+                validateForm();
+            });
+            
+            li.appendChild(a);
+            optionsContainer.appendChild(li);
+        }
+
+        selection.style.display = 'block';
         validateForm();
     }
 
-
     fetch(`{{ route("api.blocked-dates", $package->id) }}`)
-
         .then(r => r.json())
         .then(data => {
             blockedDates = data.map(range => ({
@@ -260,21 +296,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         const checkInStr = selectedDates[0].getFullYear() + '-' +
                             String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
                             String(selectedDates[0].getDate()).padStart(2,'0');
-                        generateCheckOutRadios(checkInStr);
+
+                        generateCheckOutDropdown(checkInStr);
                         document.getElementById('date-overlap-warning').style.display = 'none';
                         styleCheckInDays();
+                        validateForm();
+                    } else {
+                        document.getElementById('checkout-selection').style.display = 'none';
                         validateForm();
                     }
                 }
             });
 
             styleCheckInDays();
+        })
+        .catch(err => {
+            console.error('Failed to load blocked dates:', err);
+            // Show user-friendly error
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger mt-3';
+            alertDiv.textContent = 'Unable to load availability. Please refresh the page or try again later.';
+            document.querySelector('.dayunan-card.mb-4 .dayunan-card-body').prepend(alertDiv);
         });
-
-        // Initial radios if preloaded (unlikely)
-        const initialCheckIn = document.getElementById('check_in').value;
-        if (initialCheckIn) generateCheckOutRadios(initialCheckIn);
-
 
     const form = document.getElementById('booking-details-form');
     const guestName = document.getElementById('guest_name');
@@ -284,14 +327,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function validateForm() {
         let isValid = true;
+        
+        // Reset validation states
         [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
             if (field) field.classList.remove('is-invalid');
         });
+
         const checkInVal = document.getElementById('check_in').value;
-        const selectedRadio = document.querySelector('input[name="check_out"]:checked');
-        const checkOutVal = selectedRadio ? selectedRadio.value : '';
+        const checkOutVal = document.getElementById('check_out_hidden').value;
         const warningEl = document.getElementById('date-overlap-warning');
         const hasWarning = warningEl.style.display === 'block';
+        
+        // Date validation
         if (!checkInVal || !checkOutVal) isValid = false;
         if (hasWarning) isValid = false;
         if (checkInVal && checkOutVal && checkOverlap(checkInVal, checkOutVal)) {
@@ -300,25 +347,44 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             warningEl.style.display = 'none';
         }
-        if (guestName && !guestName.value.trim()) { guestName.classList.add('is-invalid'); isValid = false; }
-        if (guestEmail) {
-            if (!guestEmail.value.trim()) { guestEmail.classList.add('is-invalid'); isValid = false; }
-            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.value)) { guestEmail.classList.add('is-invalid'); isValid = false; }
+        
+        // Guest info validation (only if fields exist - user not logged in)
+        if (guestName && !guestName.value.trim()) { 
+            guestName.classList.add('is-invalid'); 
+            isValid = false; 
         }
+        
+        if (guestEmail) {
+            if (!guestEmail.value.trim()) { 
+                guestEmail.classList.add('is-invalid'); 
+                isValid = false; 
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.value)) { 
+                guestEmail.classList.add('is-invalid'); 
+                isValid = false; 
+            }
+        }
+        
         if (guestConfirmEmail) {
-            if (!guestConfirmEmail.value.trim()) { guestConfirmEmail.classList.add('is-invalid'); isValid = false; }
-            else if (guestEmail && guestEmail.value !== guestConfirmEmail.value) {
+            if (!guestConfirmEmail.value.trim()) { 
+                guestConfirmEmail.classList.add('is-invalid'); 
+                isValid = false; 
+            } else if (guestEmail && guestEmail.value !== guestConfirmEmail.value) {
                 guestEmail.classList.add('is-invalid');
                 guestConfirmEmail.classList.add('is-invalid');
                 isValid = false;
             }
         }
-        if (guestPhone && !guestPhone.value.trim()) { guestPhone.classList.add('is-invalid'); isValid = false; }
+        
+        if (guestPhone && !guestPhone.value.trim()) { 
+            guestPhone.classList.add('is-invalid'); 
+            isValid = false; 
+        }
+        
         const submitBtn = document.getElementById('submit-booking');
         if (submitBtn) {
             submitBtn.disabled = !isValid;
             if (isValid) {
-                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i> Confirm &amp; Book Now';
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i> Confirm & Book Now';
                 submitBtn.style.opacity = '1';
                 submitBtn.style.cursor = 'pointer';
             } else {
@@ -330,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
 
+    // Add validation listeners
     [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
         if (field) {
             field.addEventListener('input', validateForm);
@@ -338,7 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     form.addEventListener('submit', function(e) {
-        if (!validateForm()) e.preventDefault();
+        if (!validateForm()) {
+            e.preventDefault();
+        }
     });
 
     validateForm();
@@ -350,15 +419,59 @@ document.addEventListener('DOMContentLoaded', function() {
 .btn-dayunan:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(58,95,65,0.3) !important; }
 .border-terracotta { border-color: var(--terracotta) !important; border-width: 2px !important; }
 .border-terracotta:focus { border-color: #d97706 !important; box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25) !important; }
+
 .flatpickr-day:not(.disabled):not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled):hover {
     background: #3A5F41 !important;
     color: #fff !important;
     border-color: #3A5F41 !important;
     opacity: 0.8 !important;
 }
+
+/* Custom dropdown styling - matches the rest of the site */
+.dropdown-menu {
+    font-family: inherit !important;
+    border-color: var(--terracotta);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    font-family: inherit !important;
+    font-size: 1rem;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #3A5F41;
+    color: white;
+}
+
+.dropdown-item.active {
+        background-color: #3A5F41;
+    color: white;
+}
+
+.dropdown-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#stayLengthDropdown {
+    text-align: left;
+    font-family: inherit;
+    font-size: 1rem;
+    background: white;
+    border-width: 2px;
+}
+
+#stayLengthDropdown::after {
+    float: right;
+    margin-top: 8px;
+}
+
 @media (max-width: 768px) {
     .package-detail-image { height: 280px; }
-    .form-control-lg { font-size: 1rem !important; }
+    .form-control-lg, #stayLengthDropdown { font-size: 1rem !important; }
 }
 </style>
 @endsection
