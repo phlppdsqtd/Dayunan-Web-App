@@ -13,7 +13,7 @@
                         REF #{{ $booking->id }}
                     </p>
 
-                    {{-- STATUS BUTTONS - separate forms, no redirect to list --}}
+                    {{-- STATUS BUTTONS --}}
                     <div class="mb-5">
                         <label class="khula text-muted d-block mb-3" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHANGE STATUS</label>
                         <div class="d-flex gap-2">
@@ -48,6 +48,7 @@
                     <form action="{{ route('manage.admin.update', $booking) }}" method="POST">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="check_out" id="check_out_hidden" value="{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}">
 
                         @if(session('success'))
                             <div class="mb-4 p-3" style="border-left: 3px solid #3A5F41; background: rgba(58,95,65,0.08); font-family:'Khula',sans-serif; font-size:0.65rem; color:#3A5F41; letter-spacing:0.1rem;">
@@ -65,20 +66,29 @@
                             @enderror
                         </div>
 
-                        <div class="mb-2">
+                        <div class="mb-4">
                             <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-OUT DATE</label>
-                            <input type="text" id="admin_check_out" name="check_out"
-                                   class="form-control aesthetic-input py-3"
-                                   value="{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}" required>
-                            @error('check_out')
-                                <span class="khula text-danger" style="font-size: 0.65rem;">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <div id="overlap-warning" style="display:none;" class="mb-4">
-                            <span class="khula" style="font-size:0.65rem; letter-spacing:0.1rem; color:#B08D57;">
-                                 THESE DATES OVERLAP AN EXISTING APPROVED BOOKING. PLEASE SELECT DIFFERENT DATES.
-                            </span>
+                            <div class="dropdown w-100">
+                                <button class="btn dropdown-toggle w-100 text-start aesthetic-input py-3"
+                                        type="button"
+                                        id="stayLengthDropdown"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        style="background: transparent; border: none; border-bottom: 1px solid var(--sandstorm-beige); border-radius: 0; font-family: 'Khula', sans-serif; font-size: 1rem;">
+                                    {{ \Carbon\Carbon::parse($booking->check_in)->diffInDays(\Carbon\Carbon::parse($booking->check_out)) === 0 ? 'Same day' : \Carbon\Carbon::parse($booking->check_in)->diffInDays(\Carbon\Carbon::parse($booking->check_out)) . ' days' }} ({{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }})
+                                </button>
+                                <ul class="dropdown-menu w-100" id="stayLengthOptions" style="max-height: 300px; overflow-y: auto;">
+                                    <li><a class="dropdown-item disabled" href="#">Select check-in first</a></li>
+                                </ul>
+                            </div>
+                            <div id="overlap-warning" style="display:none;" class="mt-2">
+                                <span class="khula" style="font-size:0.65rem; letter-spacing:0.1rem; color:#B08D57;">
+                                    THESE DATES OVERLAP AN EXISTING APPROVED BOOKING. PLEASE SELECT DIFFERENT DATES.
+                                </span>
+                            </div>
+                            <div class="mt-2 small p-2" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem; font-size: 0.65rem;">
+                                Encircled dates are booked. Stay max 7 days or until next booking.
+                            </div>
                         </div>
 
                         <div class="mb-4">
@@ -119,11 +129,13 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let blockedDates = [], checkInPicker, checkOutPicker;
+    let blockedDates = [], checkInPicker;
 
-    function styleDisabledDays(fp) {
+    function styleCheckInDays() {
         setTimeout(function() {
-            if (!fp || !fp.days) return;
+            const el = document.getElementById('admin_check_in');
+            if (!el || !el._flatpickr || !el._flatpickr.days) return;
+            const fp = el._flatpickr;
             const today = new Date().toISOString().slice(0,10);
             fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
                 const dateStr = day.dateObj ?
@@ -133,47 +145,106 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!dateStr) return;
                 blockedDates.forEach(function(range) {
                     if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
-                        day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:pointer !important;';
+                        day.classList.add('disabled');
+                        day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
                         day.addEventListener('mouseover', function() {
-                            this.style.cssText = 'background:#3A5F41 !important; color:#fff !important; border-radius:50% !important; border: 2px solid #3A5F41 !important; opacity:0.8 !important; cursor:pointer !important;';
-                        });
-                        day.addEventListener('mouseout', function() {
-                            this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:pointer !important;';
+                            this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
                         });
                     }
                 });
             });
-            fp.days.querySelectorAll('.flatpickr-day.selected').forEach(function(day) {
-                day.style.cssText = 'background:#3A5F41 !important; color:#fff !important; border-radius:50% !important; border: 2px solid #3A5F41 !important; opacity:1 !important; cursor:pointer !important;';
-            });
         }, 100);
     }
 
-    function checkOverlap(checkIn, checkOut) {
+    function checkOverlap(checkInStr, checkOutStr) {
         return blockedDates.some(function(range) {
-            return checkIn < range.to && checkOut > range.from;
+            return checkInStr < range.to && checkOutStr > range.from;
         });
     }
 
-    function getDateStr(date) {
-        return date.getFullYear() + '-' +
-            String(date.getMonth()+1).padStart(2,'0') + '-' +
-            String(date.getDate()).padStart(2,'0');
+    function daysBetween(start, end) {
+        const s = new Date(start + 'T00:00:00');
+        const e = new Date(end + 'T00:00:00');
+        return Math.floor((e - s) / (1000 * 60 * 60 * 24));
     }
 
-    function updateOverlapWarning() {
+    function generateCheckOutDropdown(checkInStr) {
+        const dropdownButton = document.getElementById('stayLengthDropdown');
+        const optionsContainer = document.getElementById('stayLengthOptions');
+
+        if (!checkInStr) return;
+
+        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
+        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
+        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+        const maxDays = maxN;
+
+        optionsContainer.innerHTML = '';
+
+        if (maxDays < 0) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.textContent = 'No available dates';
+            document.getElementById('check_out_hidden').value = '';
+            updateSaveBtn();
+            return;
+        }
+
+        for (let i = 0; i <= maxDays; i++) {
+            const parts = checkInStr.split('-');
+            const checkoutDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + i);
+            const checkoutStr = checkoutDate.getFullYear() + '-' +
+                String(checkoutDate.getMonth()+1).padStart(2,'0') + '-' +
+                String(checkoutDate.getDate()).padStart(2,'0');
+            const label = i === 0 ? `Same day (${checkoutStr})` : `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = '#';
+            a.textContent = label;
+            a.setAttribute('data-checkout-date', checkoutStr);
+            a.setAttribute('data-days', i);
+
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const selectedDate = this.getAttribute('data-checkout-date');
+                const selectedDays = parseInt(this.getAttribute('data-days'));
+
+                if (checkOverlap(checkInStr, selectedDate)) {
+                    document.getElementById('overlap-warning').style.display = 'block';
+                    document.getElementById('check_out_hidden').value = '';
+                    updateSaveBtn();
+                    return;
+                }
+
+                document.getElementById('overlap-warning').style.display = 'none';
+                document.getElementById('check_out_hidden').value = selectedDate;
+                dropdownButton.textContent = selectedDays === 0 ? `Same day (${selectedDate})` : `${selectedDays} ${selectedDays === 1 ? 'day' : 'days'} (${selectedDate})`;
+
+                optionsContainer.querySelectorAll('.dropdown-item').forEach(item => item.classList.remove('active'));
+                a.classList.add('active');
+
+                updateSaveBtn();
+            });
+
+            li.appendChild(a);
+            optionsContainer.appendChild(li);
+        }
+    }
+
+    function updateSaveBtn() {
         const saveBtn = document.getElementById('save-btn');
-        if (checkInPicker && checkOutPicker && checkInPicker.selectedDates[0] && checkOutPicker.selectedDates[0]) {
-            const checkIn = getDateStr(checkInPicker.selectedDates[0]);
-            const checkOut = getDateStr(checkOutPicker.selectedDates[0]);
-            const warningEl = document.getElementById('overlap-warning');
-            if (checkOverlap(checkIn, checkOut)) {
-                warningEl.style.display = 'block';
-                if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; saveBtn.style.cursor = 'not-allowed'; }
-            } else {
-                warningEl.style.display = 'none';
-                if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; saveBtn.style.cursor = 'pointer'; }
-            }
+        const checkInVal = document.getElementById('admin_check_in').value;
+        const checkOutVal = document.getElementById('check_out_hidden').value;
+        const warning = document.getElementById('overlap-warning');
+        if (checkInVal && checkOutVal && warning.style.display !== 'block') {
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
+        } else {
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = '0.5';
+            saveBtn.style.cursor = 'not-allowed';
         }
     }
 
@@ -184,35 +255,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 .filter(range => range.booking_id !== {{ $booking->id }})
                 .map(range => ({ from: range.start_date, to: range.end_date }));
 
+            const disableRanges = blockedDates.map(range => ({
+                from: new Date(range.from + 'T00:00:00'),
+                to: new Date(range.to + 'T00:00:00')
+            }));
+
             checkInPicker = flatpickr("#admin_check_in", {
                 dateFormat: "Y-m-d",
                 defaultDate: "{{ \Carbon\Carbon::parse($booking->check_in)->format('Y-m-d') }}",
-                onReady: function() { styleDisabledDays(this); },
-                onMonthChange: function() { styleDisabledDays(this); },
-                onChange: function(selectedDates, dateStr, instance) {
-                    styleDisabledDays(instance);
+                disable: disableRanges,
+                onReady: styleCheckInDays,
+                onMonthChange: styleCheckInDays,
+                onChange: function(selectedDates) {
+                    styleCheckInDays();
                     if (selectedDates[0]) {
-                        const tomorrow = new Date(selectedDates[0]);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        checkOutPicker.set('minDate', tomorrow);
-                        styleDisabledDays(checkOutPicker);
+                        const checkInStr = selectedDates[0].getFullYear() + '-' +
+                            String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
+                            String(selectedDates[0].getDate()).padStart(2,'0');
+                        document.getElementById('check_out_hidden').value = '';
+                        document.getElementById('overlap-warning').style.display = 'none';
+                        generateCheckOutDropdown(checkInStr);
                     }
-                    updateOverlapWarning();
+                    updateSaveBtn();
                 }
             });
 
-            checkOutPicker = flatpickr("#admin_check_out", {
-                dateFormat: "Y-m-d",
-                defaultDate: "{{ \Carbon\Carbon::parse($booking->check_out)->format('Y-m-d') }}",
-                onReady: function() { styleDisabledDays(this); },
-                onMonthChange: function() { styleDisabledDays(this); },
-                onChange: function(selectedDates, dateStr, instance) {
-                    styleDisabledDays(instance);
-                    updateOverlapWarning();
-                }
-            });
-
-            updateOverlapWarning();
+            generateCheckOutDropdown("{{ \Carbon\Carbon::parse($booking->check_in)->format('Y-m-d') }}");
+            updateSaveBtn();
         });
 });
 </script>
@@ -239,16 +308,30 @@ document.addEventListener('DOMContentLoaded', function() {
     .tenor-sans { font-family: 'Tenor Sans', sans-serif; text-transform: uppercase; }
     .khula { font-family: 'Khula', sans-serif; }
     .cormorant { font-family: 'Cormorant Garamond', serif; }
-    .flatpickr-day:not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled):hover {
-        background: #3A5F41 !important;
-        color: #fff !important;
-        border-color: #3A5F41 !important;
-        opacity: 0.8 !important;
+    .dropdown-menu {
+        font-family: inherit !important;
+        border-color: var(--terracotta);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
+    .dropdown-item {
+        font-family: inherit !important;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        transition: all 0.2s ease;
+    }
+    .dropdown-item:hover { background-color: #3A5F41; color: white; }
+    .dropdown-item.active { background-color: #3A5F41; color: white; }
+    .dropdown-item.disabled { opacity: 0.5; cursor: not-allowed; }
     #overlap-warning {
         border-left: 3px solid #B08D57;
         background: rgba(176, 141, 87, 0.08);
         padding: 10px 15px;
+    }
+    .flatpickr-day:not(.disabled):not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled):hover {
+        background: #3A5F41 !important;
+        color: #fff !important;
+        border-color: #3A5F41 !important;
+        opacity: 0.8 !important;
     }
 </style>
 @endsection

@@ -36,6 +36,7 @@
             <form action="{{ route('book.store') }}" method="POST" id="booking-details-form">
                 @csrf
                 <input type="hidden" name="package_id" value="{{ $package->id }}">
+                <input type="hidden" name="check_out" id="check_out_hidden" value="">
 
                 <div class="dayunan-card mb-5">
                     <div class="row g-0 h-100">
@@ -93,25 +94,33 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-terracotta mb-2">
                                     Check-out Date
-                                    <small class="text-muted">
-                                        @if(str_contains($package->title, '12 Hours'))
-                                            (by 2:00 AM)
-                                        @else
-                                            (by 12NN)
-                                        @endif
-                                    </small>
+                                    <small class="text-muted">(by 12:00 Noon)</small>
                                     <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm flatpickr-input" id="check_out" name="check_out" placeholder="Select check-out" readonly required>
-                                <div id="date-overlap-warning" style="display:none;" class="mt-2">
-                                    <span class="khula text-terracotta" style="font-size:0.65rem; letter-spacing:0.1rem;">
-                                        SELECTED DATES OVERLAP AN EXISTING BOOKING. PLEASE CHOOSE DIFFERENT DATES.
-                                    </span>
+                                <div id="checkout-selection" style="display:none;">
+                                    <div class="dropdown w-100" id="custom-dropdown-container">
+                                        <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start form-control-lg" 
+                                                type="button" 
+                                                id="stayLengthDropdown" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false"
+                                                style="background: white; border-color: var(--terracotta);">
+                                            Select stay length...
+                                        </button>
+                                        <ul class="dropdown-menu w-100" id="stayLengthOptions" style="max-height: 300px; overflow-y: auto;">
+                                            <li><a class="dropdown-item disabled" href="#">Select check-in first</a></li>
+                                        </ul>
+                                    </div>
+                                    <div id="date-overlap-warning" style="display:none;" class="mt-3">
+                                        <span class="khula text-terracotta" style="font-size:0.65rem; letter-spacing:0.1rem;">
+                                            Selected stay overlaps an existing booking. Choose shorter stay.
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-3 mb-2 small p-3" style="border-left: 3px solid #B08D57; background: rgba(176,141,87,0.08); color: #B08D57; font-family: 'Khula', sans-serif; letter-spacing: 0.05rem;">
-                            Encircled dates are booked and cannot be selected as check-in. You may check out on a booked date.
+                            Encircled dates are booked and cannot be selected as check-in. Stay max 7 days or until next booking.
                         </div>
                     </div>
                 </div>
@@ -154,7 +163,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let checkInPicker, checkOutPicker, blockedDates = [];
+
+    let checkInPicker, blockedDates = [];
 
     function styleCheckInDays() {
         setTimeout(function() {
@@ -182,48 +192,91 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    function styleCheckOutDays() {
-        setTimeout(function() {
-            const el = document.getElementById('check_out');
-            if (!el || !el._flatpickr || !el._flatpickr.days) return;
-            const fp = el._flatpickr;
-            const today = new Date().toISOString().slice(0,10);
-
-            const checkIn = checkInPicker && checkInPicker.selectedDates[0] ?
-                checkInPicker.selectedDates[0].getFullYear() + '-' +
-                String(checkInPicker.selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                String(checkInPicker.selectedDates[0].getDate()).padStart(2,'0') : null;
-
-            fp.days.querySelectorAll('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)').forEach(function(day) {
-                const dateStr = day.dateObj ?
-                    day.dateObj.getFullYear() + '-' +
-                    String(day.dateObj.getMonth()+1).padStart(2,'0') + '-' +
-                    String(day.dateObj.getDate()).padStart(2,'0') : null;
-                if (!dateStr) return;
-
-                blockedDates.forEach(function(range) {
-                    if (dateStr >= range.from && dateStr <= range.to && dateStr >= today) {
-                        const isValidCheckout = checkIn && dateStr === range.from;
-                        if (!isValidCheckout) {
-                            day.classList.add('disabled');
-                            day.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                            day.addEventListener('mouseover', function() {
-                                this.style.cssText = 'background:transparent !important; color:#B08D57 !important; border-radius:50% !important; border: 2px solid #B08D57 !important; opacity:1 !important; cursor:not-allowed !important;';
-                            });
-                        }
-                    }
-                });
-            });
-        }, 100);
-    }
-
-    function checkOverlap(checkIn, checkOut) {
+    function checkOverlap(checkInStr, checkOutStr) {
         return blockedDates.some(function(range) {
-            return checkIn < range.to && checkOut > range.from;
+            return checkInStr < range.to && checkOutStr > range.from;
         });
     }
 
-    fetch(`{{ route("api.blocked-dates") }}`)
+    function daysBetween(start, end) {
+        const s = new Date(start + 'T00:00:00');
+        const e = new Date(end + 'T00:00:00');
+        return Math.floor((e - s) / (1000 * 60 * 60 * 24));
+    }
+
+    function generateCheckOutDropdown(checkInStr) {
+        const selection = document.getElementById('checkout-selection');
+        const dropdownButton = document.getElementById('stayLengthDropdown');
+        const optionsContainer = document.getElementById('stayLengthOptions');
+        
+        if (!checkInStr) {
+            selection.style.display = 'none';
+            return;
+        }
+
+        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
+        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
+        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+        const maxDays = maxN;
+
+        optionsContainer.innerHTML = '';
+
+        if (maxDays < 0) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.innerHTML = 'No available dates <span class="float-end">↗</span>';
+            selection.style.display = 'block';
+            return;
+        }
+
+        for (let i = 0; i <= maxDays; i++) {
+            const parts = checkInStr.split('-');
+            const checkoutDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + i);
+            const checkoutStr = checkoutDate.getFullYear() + '-' +
+                String(checkoutDate.getMonth()+1).padStart(2,'0') + '-' +
+                String(checkoutDate.getDate()).padStart(2,'0');
+            const label = i === 0 ? `Same day (${checkoutStr})` : `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
+
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = '#';
+            a.textContent = label;
+            a.setAttribute('data-checkout-date', checkoutStr);
+            a.setAttribute('data-days', i);
+            
+            a.addEventListener('click', function(e) {
+                e.preventDefault();
+                const selectedDate = this.getAttribute('data-checkout-date');
+                const selectedDays = parseInt(this.getAttribute('data-days'));
+                
+                if (checkOverlap(checkInStr, selectedDate)) {
+                    document.getElementById('date-overlap-warning').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('date-overlap-warning').style.display = 'none';
+                document.getElementById('check_out_hidden').value = selectedDate;
+                dropdownButton.innerHTML = selectedDays === 0
+                    ? `Same day (${selectedDate}) <span class="float-end">↗</span>`
+                    : `${selectedDays} ${selectedDays === 1 ? 'day' : 'days'} (${selectedDate}) <span class="float-end">↗</span>`;
+                
+                optionsContainer.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                a.classList.add('active');
+                
+                validateForm();
+            });
+            
+            li.appendChild(a);
+            optionsContainer.appendChild(li);
+        }
+
+        selection.style.display = 'block';
+        validateForm();
+    }
+
+    fetch(`{{ route("api.blocked-dates", $package->id) }}`)
         .then(r => r.json())
         .then(data => {
             blockedDates = data.map(range => ({
@@ -231,64 +284,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 to: range.end_date
             }));
 
+            const disableRanges = blockedDates.map(range => ({
+                from: new Date(range.from + 'T00:00:00'),
+                to: new Date(range.to + 'T00:00:00')
+            }));
+
             checkInPicker = flatpickr("#check_in", {
                 minDate: new Date().fp_incr(1),
                 dateFormat: "Y-m-d",
-                disable: blockedDates,
+                disable: disableRanges,
                 onReady: styleCheckInDays,
                 onMonthChange: styleCheckInDays,
                 onChange: function(selectedDates) {
                     if (selectedDates[0]) {
-                        const tomorrow = new Date(selectedDates[0]);
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        checkOutPicker.set('minDate', tomorrow);
-                        checkOutPicker.setDate('');
+                        const checkInStr = selectedDates[0].getFullYear() + '-' +
+                            String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
+                            String(selectedDates[0].getDate()).padStart(2,'0');
+
+                        generateCheckOutDropdown(checkInStr);
                         document.getElementById('date-overlap-warning').style.display = 'none';
                         styleCheckInDays();
-                        styleCheckOutDays();
+                        validateForm();
+                    } else {
+                        document.getElementById('checkout-selection').style.display = 'none';
                         validateForm();
                     }
                 }
             });
 
-            checkOutPicker = flatpickr("#check_out", {
-                dateFormat: "Y-m-d",
-                minDate: new Date().fp_incr(2),
-                clickOpens: false,
-                onReady: styleCheckOutDays,
-                onMonthChange: styleCheckOutDays,
-                onChange: function(selectedDates) {
-                    if (selectedDates[0] && checkInPicker.selectedDates[0]) {
-                        const checkIn = checkInPicker.selectedDates[0].getFullYear() + '-' +
-                            String(checkInPicker.selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                            String(checkInPicker.selectedDates[0].getDate()).padStart(2,'0');
-                        const checkOut = selectedDates[0].getFullYear() + '-' +
-                            String(selectedDates[0].getMonth()+1).padStart(2,'0') + '-' +
-                            String(selectedDates[0].getDate()).padStart(2,'0');
-
-                        const warningEl = document.getElementById('date-overlap-warning');
-                        if (checkOverlap(checkIn, checkOut)) {
-                            warningEl.style.display = 'block';
-                            checkOutPicker.setDate('');
-                        } else {
-                            warningEl.style.display = 'none';
-                        }
-                    }
-                    styleCheckOutDays();
-                    validateForm();
-                }
-            });
-
-            document.getElementById('check_out').addEventListener('click', function() {
-                if (!checkInPicker.selectedDates[0]) {
-                    alert('Please select check-in date first');
-                    return;
-                }
-                checkOutPicker.open();
-            });
-
             styleCheckInDays();
-            styleCheckOutDays();
+        })
+        .catch(err => {
+            console.error('Failed to load blocked dates:', err);
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger mt-3';
+            alertDiv.textContent = 'Unable to load availability. Please refresh the page or try again later.';
+            document.querySelector('.dayunan-card.mb-4 .dayunan-card-body').prepend(alertDiv);
         });
 
     const form = document.getElementById('booking-details-form');
@@ -299,32 +330,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function validateForm() {
         let isValid = true;
+        
         [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
             if (field) field.classList.remove('is-invalid');
         });
+
         const checkInVal = document.getElementById('check_in').value;
-        const checkOutVal = document.getElementById('check_out').value;
+        const checkOutVal = document.getElementById('check_out_hidden').value;
+        const warningEl = document.getElementById('date-overlap-warning');
+        const hasWarning = warningEl.style.display === 'block';
+        
         if (!checkInVal || !checkOutVal) isValid = false;
-        if (document.getElementById('date-overlap-warning').style.display === 'block') isValid = false;
-        if (guestName && !guestName.value.trim()) { guestName.classList.add('is-invalid'); isValid = false; }
-        if (guestEmail) {
-            if (!guestEmail.value.trim()) { guestEmail.classList.add('is-invalid'); isValid = false; }
-            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.value)) { guestEmail.classList.add('is-invalid'); isValid = false; }
+        if (hasWarning) isValid = false;
+        if (checkInVal && checkOutVal && checkOverlap(checkInVal, checkOutVal)) {
+            warningEl.style.display = 'block';
+            isValid = false;
+        } else {
+            warningEl.style.display = 'none';
         }
+        
+        if (guestName && !guestName.value.trim()) { 
+            guestName.classList.add('is-invalid'); 
+            isValid = false; 
+        }
+        
+        if (guestEmail) {
+            if (!guestEmail.value.trim()) { 
+                guestEmail.classList.add('is-invalid'); 
+                isValid = false; 
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.value)) { 
+                guestEmail.classList.add('is-invalid'); 
+                isValid = false; 
+            }
+        }
+        
         if (guestConfirmEmail) {
-            if (!guestConfirmEmail.value.trim()) { guestConfirmEmail.classList.add('is-invalid'); isValid = false; }
-            else if (guestEmail && guestEmail.value !== guestConfirmEmail.value) {
+            if (!guestConfirmEmail.value.trim()) { 
+                guestConfirmEmail.classList.add('is-invalid'); 
+                isValid = false; 
+            } else if (guestEmail && guestEmail.value !== guestConfirmEmail.value) {
                 guestEmail.classList.add('is-invalid');
                 guestConfirmEmail.classList.add('is-invalid');
                 isValid = false;
             }
         }
-        if (guestPhone && !guestPhone.value.trim()) { guestPhone.classList.add('is-invalid'); isValid = false; }
+        
+        if (guestPhone && !guestPhone.value.trim()) { 
+            guestPhone.classList.add('is-invalid'); 
+            isValid = false; 
+        }
+        
         const submitBtn = document.getElementById('submit-booking');
         if (submitBtn) {
             submitBtn.disabled = !isValid;
             if (isValid) {
-                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i> Confirm &amp; Book Now';
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i> Confirm & Book Now';
                 submitBtn.style.opacity = '1';
                 submitBtn.style.cursor = 'pointer';
             } else {
@@ -344,7 +404,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     form.addEventListener('submit', function(e) {
-        if (!validateForm()) e.preventDefault();
+        if (!validateForm()) {
+            e.preventDefault();
+        }
     });
 
     validateForm();
@@ -356,15 +418,58 @@ document.addEventListener('DOMContentLoaded', function() {
 .btn-dayunan:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(58,95,65,0.3) !important; }
 .border-terracotta { border-color: var(--terracotta) !important; border-width: 2px !important; }
 .border-terracotta:focus { border-color: #d97706 !important; box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25) !important; }
+
 .flatpickr-day:not(.disabled):not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled):hover {
     background: #3A5F41 !important;
     color: #fff !important;
     border-color: #3A5F41 !important;
     opacity: 0.8 !important;
 }
+
+.dropdown-menu {
+    font-family: inherit !important;
+    border-color: var(--terracotta);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    font-family: inherit !important;
+    font-size: 1rem;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #3A5F41;
+    color: white;
+}
+
+.dropdown-item.active {
+    background-color: #3A5F41;
+    color: white;
+}
+
+.dropdown-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#stayLengthDropdown {
+    text-align: left;
+    font-family: inherit;
+    font-size: 1rem;
+    background: white;
+    border-width: 2px;
+}
+
+#stayLengthDropdown::after {
+    float: right;
+    margin-top: 8px;
+}
+
 @media (max-width: 768px) {
     .package-detail-image { height: 280px; }
-    .form-control-lg { font-size: 1rem !important; }
+    .form-control-lg, #stayLengthDropdown { font-size: 1rem !important; }
 }
 </style>
 @endsection
