@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
         const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
 
-        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr) + 1) : 7;
         const maxDays = maxN;
 
         // Clear and populate dropdown
@@ -236,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
             const checkoutStr = checkoutDate.toISOString().slice(0,10);
             const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
+
             
             const li = document.createElement('li');
             const a = document.createElement('a');
