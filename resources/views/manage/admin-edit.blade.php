@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
         const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
-        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr)) : 7;
+        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr) + 1) : 7;
         const maxDays = maxN;
 
         optionsContainer.innerHTML = '';
