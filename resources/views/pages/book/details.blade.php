@@ -98,7 +98,6 @@
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div id="checkout-selection" style="display:none;">
-                                    <!-- Custom Dropdown Container -->
                                     <div class="dropdown w-100" id="custom-dropdown-container">
                                         <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start form-control-lg" 
                                                 type="button" 
@@ -199,12 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function daysBetween(start, end) {
-        const s = new Date(start + 'T00:00:00');
-        const e = new Date(end + 'T00:00:00');
-        return Math.floor((e - s) / (1000 * 60 * 60 * 24));
-    }
-
     function generateCheckOutDropdown(checkInStr) {
         const selection = document.getElementById('checkout-selection');
         const dropdownButton = document.getElementById('stayLengthDropdown');
@@ -215,28 +208,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Find cap: earliest blocked.from > checkInStr
-        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
-        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
-
-        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr) + 1) : 7;
-        const maxDays = maxN;
-
         // Clear and populate dropdown
         optionsContainer.innerHTML = '';
 
-        if (maxDays < 1) {
-            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
-            dropdownButton.innerHTML = 'No available dates <span class="float-end">↗</span>';
-            selection.style.display = 'block';
-            return;
-        }
+                let hasAnyOptions = false;
+        let dayCounter = 1;
 
-        for (let i = 1; i <= maxDays; i++) {
+        // Check up to 7 days maximum
+        for (let i = 1; i <= 7; i++) {
+            // Add i days to check-in date (1 day = next day)
             const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
             const checkoutStr = checkoutDate.toISOString().slice(0,10);
-            const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
-
+            
+            // Skip same-day checkout
+            if (checkoutStr === checkInStr) {
+                continue;
+            }
+            
+            // Skip if checkout would overlap any existing booking
+            if (checkOverlap(checkInStr, checkoutStr)) {
+                continue;
+            }
+            
+            hasAnyOptions = true;
+            // Use dayCounter instead of i for the label
+            const label = `${dayCounter} ${dayCounter === 1 ? 'day' : 'days'} (${checkoutStr})`;
+            dayCounter++;
             
             const li = document.createElement('li');
             const a = document.createElement('a');
@@ -244,24 +241,17 @@ document.addEventListener('DOMContentLoaded', function() {
             a.href = '#';
             a.textContent = label;
             a.setAttribute('data-checkout-date', checkoutStr);
-            a.setAttribute('data-days', i);
+            a.setAttribute('data-days', dayCounter - 1);
             
             a.addEventListener('click', function(e) {
                 e.preventDefault();
                 const selectedDate = this.getAttribute('data-checkout-date');
                 const selectedDays = this.getAttribute('data-days');
                 
-                // Check for overlap
-                if (checkOverlap(checkInStr, selectedDate)) {
-                    document.getElementById('date-overlap-warning').style.display = 'block';
-                    return;
-                }
-                
                 document.getElementById('date-overlap-warning').style.display = 'none';
                 document.getElementById('check_out_hidden').value = selectedDate;
                 dropdownButton.innerHTML = `${selectedDays} days (${selectedDate}) <span class="float-end">↗</span>`;
                 
-                // Update active state
                 optionsContainer.querySelectorAll('.dropdown-item').forEach(item => {
                     item.classList.remove('active');
                 });
@@ -272,6 +262,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             li.appendChild(a);
             optionsContainer.appendChild(li);
+        }
+
+        if (!hasAnyOptions) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.innerHTML = 'No available dates <span class="float-end">↗</span>';
         }
 
         selection.style.display = 'block';
@@ -318,7 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(err => {
             console.error('Failed to load blocked dates:', err);
-            // Show user-friendly error
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-danger mt-3';
             alertDiv.textContent = 'Unable to load availability. Please refresh the page or try again later.';
@@ -334,7 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateForm() {
         let isValid = true;
         
-        // Reset validation states
         [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
             if (field) field.classList.remove('is-invalid');
         });
@@ -344,7 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const warningEl = document.getElementById('date-overlap-warning');
         const hasWarning = warningEl.style.display === 'block';
         
-        // Date validation
         if (!checkInVal || !checkOutVal) isValid = false;
         if (hasWarning) isValid = false;
         if (checkInVal && checkOutVal && checkOverlap(checkInVal, checkOutVal)) {
@@ -354,7 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
             warningEl.style.display = 'none';
         }
         
-        // Guest info validation (only if fields exist - user not logged in)
         if (guestName && !guestName.value.trim()) { 
             guestName.classList.add('is-invalid'); 
             isValid = false; 
@@ -402,7 +393,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
 
-    // Add validation listeners
     [guestName, guestEmail, guestConfirmEmail, guestPhone].forEach(field => {
         if (field) {
             field.addEventListener('input', validateForm);
@@ -433,7 +423,6 @@ document.addEventListener('DOMContentLoaded', function() {
     opacity: 0.8 !important;
 }
 
-/* Custom dropdown styling - matches the rest of the site */
 .dropdown-menu {
     font-family: inherit !important;
     border-color: var(--terracotta);
@@ -453,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .dropdown-item.active {
-        background-color: #3A5F41;
+    background-color: #3A5F41;
     color: white;
 }
 

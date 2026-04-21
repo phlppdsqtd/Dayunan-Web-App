@@ -36,8 +36,9 @@ class BookingController extends Controller
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->startOfDay();
 
-        // Check for overlapping approved bookings (whole villa - no package filter)
-        $existingBooking = Booking::where('status', 'approved')
+        // Check for overlapping approved bookings for THIS package only
+        $existingBooking = Booking::where('package_id', $request->package_id)
+            ->where('status', 'approved')
             ->where(function($query) use ($checkIn, $checkOut) {
                 $query->where('check_in', '<', $checkOut)
                     ->where('check_out', '>', $checkIn);
@@ -45,7 +46,7 @@ class BookingController extends Controller
             ->exists();
 
         if ($existingBooking) {
-            return redirect()->back()->with('error', 'Selected dates overlap with an existing approved booking.');
+            return redirect()->back()->with('error', 'Selected dates overlap with an existing approved booking for this accommodation.');
         }
 
         $package = Package::findOrFail($request->package_id);
@@ -81,15 +82,22 @@ class BookingController extends Controller
 
     public function getBlockedDates(Package $package = null, Request $request)
     {
-        // Whole villa blocking - no package filter
-        $blockedRanges = Booking::where('status', 'approved')
-            ->select('id', 'check_in', 'check_out', 'package_id')
+        // Start query for approved bookings
+        $query = Booking::where('status', 'approved');
+        
+        // Filter by package if provided
+        if ($package) {
+            $query->where('package_id', $package->id);
+        }
+        
+        $blockedRanges = $query->select('id', 'check_in', 'check_out', 'package_id')
             ->get()
             ->map(function ($booking) {
                 return [
                     'booking_id' => $booking->id,
                     'start_date' => $booking->check_in->format('Y-m-d'),
                     'end_date'   => $booking->check_out->subDay()->format('Y-m-d'),
+                    'package_id' => $booking->package_id,
                 ];
             })
             ->toArray();
