@@ -104,7 +104,6 @@ class ManageBookingController extends Controller
         $checkOut = Carbon::parse($request->check_out)->startOfDay();
 
         $existingBooking = Booking::where('status', 'approved')
-            ->where('package_id', $booking->package_id)
             ->where('id', '!=', $booking->id)
             ->where(function($query) use ($checkIn, $checkOut) {
                 $query->where('check_in', '<', $checkOut)
@@ -163,7 +162,6 @@ class ManageBookingController extends Controller
         $checkOut = Carbon::parse($request->check_out)->startOfDay();
 
         $existingBooking = Booking::where('status', 'approved')
-            ->where('package_id', $booking->package_id)
             ->where('id', '!=', $booking->id)
             ->where(function($query) use ($checkIn, $checkOut) {
                 $query->where('check_in', '<', $checkOut)

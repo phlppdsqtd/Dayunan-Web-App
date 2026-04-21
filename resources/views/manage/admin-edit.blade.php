@@ -190,8 +190,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         for (let i = 1; i <= maxDays; i++) {
-            const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
-            const checkoutStr = checkoutDate.toISOString().slice(0,10);
+            const parts = checkInStr.split('-');
+            const checkoutDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + i);
+            const checkoutStr = checkoutDate.getFullYear() + '-' +
+                String(checkoutDate.getMonth()+1).padStart(2,'0') + '-' +
+                String(checkoutDate.getDate()).padStart(2,'0');
             const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
 
             const li = document.createElement('li');
