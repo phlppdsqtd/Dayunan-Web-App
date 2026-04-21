@@ -41,12 +41,14 @@ class ManageBookingController extends Controller
         ]);
         $email = $request->email;
         $bookings = Booking::with('package')
-                            ->where(function($query) use ($user) {
-                                $query->where('user_id', $user->id)
-                                    ->orWhere('guest_email', $user->email);
-                            })
-                            ->orderBy('created_at', 'desc')
-                            ->get();
+                    ->where(function($query) use ($email) {
+                        $query->where('guest_email', $email)
+                              ->orWhereHas('user', function($q) use ($email) {
+                                  $q->where('email', $email);
+                              });
+                    })
+                    ->orderBy('check_in', 'desc')
+                    ->get();
         if ($bookings->isEmpty()) {
             return back()->with('error', 'We couldn\'t find any records associated with that email.');
         }
