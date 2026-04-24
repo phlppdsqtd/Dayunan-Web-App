@@ -12,6 +12,14 @@
                         <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem;">CONNECT</span>
                         <h2 class="tenor-sans text-jungle display-5 mb-0">Let's plan your stay.</h2>
                         <div class="mx-auto mt-4 accent-line"></div>
+
+                        @if(Auth::check() && Auth::user()->role === 'admin')
+                            <div class="mt-4">
+                                <a href="{{ route('contact.create') }}" class="btn btn-dayunan-outline px-4 py-2 tenor-sans" style="font-size: 0.7rem;">
+                                    + ADD NEW STAFF
+                                </a>
+                            </div>
+                        @endif
                     </section>
 
                     @if($contacts && $contacts->count() > 0)
@@ -34,15 +42,19 @@
                                                 <i class="bi bi-telephone me-2 opacity-50"></i>{{ $contact->contact_number }}
                                             </a>
 
-                                            {{-- ADMIN ONLY EDIT BUTTON --}}
                                             @if(Auth::check() && Auth::user()->role === 'admin')
-                                                <div class="mt-3 pt-2 border-top border-light">
-                                                    <a href="{{ route('contact.edit', $contact->id) }}" class="btn btn-dayunan-outline py-2 w-100" style="font-size: 0.6rem; min-width: auto;">
-                                                        <i class="bi bi-pencil-square me-1"></i> EDIT STAFF
+                                                <div class="mt-3 pt-2 border-top border-light d-flex gap-2">
+                                                    <a href="{{ route('contact.edit', $contact->id) }}" class="btn btn-dayunan-outline py-2 flex-grow-1" style="font-size: 0.6rem; min-width: auto;">
+                                                        EDIT
                                                     </a>
+                                                    <form action="{{ route('contact.destroy', $contact->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Delete this staff member?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="btn btn-outline-danger py-2 w-100" style="font-size: 0.6rem; border-radius: 0; border: 1px solid #dc3545;">
+                                                            DELETE
+                                                        </button>
+                                                    </form>
                                                 </div>
                                             @endif
-
                                         </div>
                                     </div>
                                 </div>
@@ -67,7 +79,6 @@
                 <div class="text-center mt-5 animate-fade-in">
                     <p class="khula text-muted small" style="letter-spacing: 0.3rem;">BACOLOD CITY &bull; NEGROS OCCIDENTAL</p>
                 </div>
-
             </div>
         </div>
     </div>
@@ -75,10 +86,7 @@
 
 <style>
     /* Aesthetic Styling */
-    .contact-page-wrapper {
-        min-height: 80vh;
-    }
-
+    .contact-page-wrapper { min-height: 80vh; }
     .contact-card {
         background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(20px);
@@ -86,30 +94,19 @@
         border: 1px solid rgba(216, 202, 184, 0.3);
         border-radius: 0;
     }
-
     .accent-line {
-        width: 40px;
-        height: 1px;
+        width: 40px; height: 1px;
         background-color: var(--terracotta);
         transition: width 0.8s ease;
     }
-
-    .contact-card:hover .accent-line {
-        width: 80px;
-    }
-
+    .contact-card:hover .accent-line { width: 80px; }
     .contact-link {
         font-family: 'Khula', sans-serif;
         color: var(--jungle-green);
         letter-spacing: 0.1rem;
         transition: all 0.3s ease;
     }
-
-    .contact-link:hover {
-        color: var(--terracotta);
-        transform: translateX(3px);
-    }
-
+    .contact-link:hover { color: var(--terracotta); transform: translateX(3px); }
     .btn-dayunan-outline {
         border: 1px solid var(--jungle-green);
         color: var(--jungle-green);
@@ -120,32 +117,11 @@
         transition: all 0.4s ease;
         min-width: 160px;
     }
-
-    .btn-dayunan-outline:hover {
-        background-color: var(--jungle-green);
-        color: #fff;
-        transform: translateY(-2px);
-    }
-
-    /* Animations */
-    .animate-fade-up {
-        animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
-    }
-
-    .animate-letter-spacing {
-        animation: letterSpace 2s ease forwards;
-    }
-
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes letterSpace {
-        from { letter-spacing: 0.1rem; opacity: 0; }
-        to { letter-spacing: 0.4rem; opacity: 1; }
-    }
-
+    .btn-dayunan-outline:hover { background-color: var(--jungle-green); color: #fff; transform: translateY(-2px); }
+    .animate-fade-up { animation: fadeUp 1s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
+    .animate-letter-spacing { animation: letterSpace 2s ease forwards; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes letterSpace { from { letter-spacing: 0.1rem; opacity: 0; } to { letter-spacing: 0.4rem; opacity: 1; } }
     .animate-fade-in { animation: fadeIn 2s ease forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>

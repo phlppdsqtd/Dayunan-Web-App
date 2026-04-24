@@ -14,32 +14,71 @@ class ContactController extends Controller
         return view('pages.contact', compact('contacts'));
     }
 
-    public function edit(Contact $contact)
+    // Show form to add new staff
+    public function create()
     {
-        // Block anyone who isn't an admin
         if (!Auth::check() || Auth::user()->role !== 'admin') {
-            abort(403, 'Only administrators can edit staff details.');
+            abort(403);
         }
-
-        return view('pages.contact-edit', compact('contact'));
+        return view('pages.contact-create');
     }
 
-    public function update(Request $request, Contact $contact)
+    // Save new staff to database
+    public function store(Request $request)
     {
-        // Double check authority before saving
         if (!Auth::check() || Auth::user()->role !== 'admin') {
             abort(403);
         }
 
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'role'           => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
+            'staff_type' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
-            'email'          => 'required|email|max:255',
+            'email' => 'required|email|max:255',
+        ]);
+
+        Contact::create($validated);
+
+        return redirect()->route('contact.index')->with('success', 'New staff added!');
+    }
+
+    public function edit(Contact $contact)
+    {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        
+        // FIX: Added quotes around 'contact'
+        return view('pages.contact-edit', compact('contact'));
+    }
+
+    public function update(Request $request, Contact $contact)
+    {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'role' => 'required|string|max:255',
+            'staff_type' => 'required|string|max:255', // Added this
+            'contact_number' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
         ]);
 
         $contact->update($validated);
+        
+        return redirect()->route('contact.index')->with('success', 'Staff updated successfully.');
+    }
+    // Delete staff
+    public function destroy(Contact $contact)
+    {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            abort(403);
+        }
 
-        return redirect()->route('contact.index')->with('success', 'Staff details updated.');
+        $contact->delete();
+        return redirect()->route('contact.index')->with('success', 'Staff removed.');
     }
 }

@@ -33,10 +33,12 @@ Route::get('/manage', [ManageBookingController::class, 'index'])->name('manage')
 // Public route - Everyone sees this
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
 
-// Admin Only Routes
-Route::middleware(['auth', 'role'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+    Route::get('/contact/create', [ContactController::class, 'create'])->name('contact.create');
+    Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
     Route::get('/contact/{contact}/edit', [ContactController::class, 'edit'])->name('contact.edit');
     Route::put('/contact/{contact}', [ContactController::class, 'update'])->name('contact.update');
+    Route::delete('/contact/{contact}', [ContactController::class, 'destroy'])->name('contact.destroy');
 });
 
 // Manage Booking

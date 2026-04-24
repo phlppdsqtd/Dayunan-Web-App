@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Contact extends Model
 {
-    // Update this to include 'number'
-    protected $fillable = ['name', 'role', 'staff_type', 'contact_number', 'email'];
+    // Updated to match your migration fields exactly
+    protected $fillable = [
+        'name', 
+        'role', 
+        'staff_type', 
+        'contact_number', 
+        'email'
+    ];
 }
