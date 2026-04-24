@@ -18,19 +18,20 @@
             </span>
         </h1>
 
-        <p class="khula mb-5 mx-auto opacity-75 animate-fade-in-delayed" style="max-width: 500px; text-transform: none; letter-spacing: 0.05rem;">
-            A grounded sanctuary designed for quiet relaxation and shared celebrations.
-        </p>
+       <p class="khula mb-5 mx-auto opacity-75 animate-fade-in-delayed" 
+   style="max-width: 500px; text-transform: none; letter-spacing: 0.05rem; font-size: 1.05rem;">
+    A grounded sanctuary designed for quiet relaxation and shared celebrations.
+</p>
 
         <div class="d-flex justify-content-center gap-3 animate-fade-in-delayed">
-            <a href="{{ url('/explore') }}" class="btn btn-dayunan-hero-light px-5 py-3 tenor-sans">
-                The Villa
-            </a>
-            
-            <a href="{{ url('/book') }}" class="btn btn-dayunan-hero-outline px-5 py-3 tenor-sans d-flex align-items-center gap-2">
-                <span>Book Now</span>
-                <i class="bi bi-arrow-right pointing-arrow"></i>
-            </a>
+           <a href="{{ url('/explore') }}" class="btn btn-dayunan-hero-light px-5 py-3 tenor-sans fs-5">
+    The Villa
+</a>
+
+<a href="{{ url('/book') }}" class="btn btn-dayunan-hero-outline px-5 py-3 tenor-sans fs-5 d-flex align-items-center gap-2">
+    <span>Book Now</span>
+    <i class="bi bi-arrow-right pointing-arrow"></i>
+</a>
         </div>
     </div>
 </section>
@@ -90,35 +91,36 @@
         </div>
 
         <div class="col-lg-4 offset-lg-1">
-            <div class="gallery-story">
-                <span class="text-terracotta khula fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem;">
-                    THE EXPERIENCE
-                </span>
+    <div class="gallery-story">
+        <span class="text-terracotta khula fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 1rem;">
+    THE EXPERIENCE
+</span>
 
-                <h2 class="tenor-sans mb-4" style="color: #3A5F41; font-size: 2.8rem; line-height: 1.1;">
-                    A Place to Pause and Breathe.
-                </h2>
-                
-                <div class="phrase-list mt-5">
-                    <div class="mb-4 pb-3 border-bottom border-light">
-                        <p class="khula text-muted mb-0">
-                            Step inside and settle into a space made for rest, quiet work, and easy moments.
-                        </p>
-                    </div>
-                    <div class="mb-4 pb-3 border-bottom border-light">
-                        <p class="khula text-muted mb-0">
-                            Spend your day by the pool, gather with friends, or simply take your time.
-                        </p>
-                    </div>
-                    <div>
-                        <p class="khula text-muted mb-0">
-                            Everything is set so you can arrive, unwind, and feel at ease.
-                        </p>
-                    </div>
-                </div>
+        <h2 class="tenor-sans mb-4" style="color: #3A5F41; font-size: 2.8rem; line-height: 1.1;">
+            A Place to Pause and Breathe.
+        </h2>
+        
+        <div class="phrase-list mt-5">
+            <div class="mb-4 pb-3 border-bottom border-light">
+                <p class="khula text-muted mb-0" style="font-size: 1.15rem;">
+                    Step inside and settle into a space made for rest, quiet work, and easy moments.
+                </p>
+            </div>
+
+            <div class="mb-4 pb-3 border-bottom border-light">
+                <p class="khula text-muted mb-0" style="font-size: 1.15rem;">
+                    Spend your day by the pool, gather with friends, or simply take your time.
+                </p>
+            </div>
+
+            <div>
+                <p class="khula text-muted mb-0" style="font-size: 1.15rem;">
+                    Everything is set so you can arrive, unwind, and feel at ease.
+                </p>
             </div>
         </div>
-
+    </div>
+</div>
     </div>
 </section>
 

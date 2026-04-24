@@ -2,15 +2,15 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
-                <h6 class="tenor-sans text-jungle mb-1" style="font-size: 0.85rem; letter-spacing: 0.2rem;">DAYÚNAN</h6>
-                <p class="khula text-muted mb-0" style="font-size: 0.65rem; letter-spacing: 0.05rem;">
+                <h6 class="tenor-sans text-jungle mb-1" style="font-size: 0.85rem; letter-spacing: 0.05rem;">DAYÚNAN</h6>
+                <p class="khula text-muted mb-0" style="font-size: 0.85rem; letter-spacing: 0.05rem;">
                     14th Lacson Street &middot; Bacolod City, Philippines
                 </p>
             </div>
 
             <div class="col-md-4 text-center d-none d-md-block">
                 <div style="width: 30px; height: 1px; background: var(--sandstorm-beige); margin: 0 auto 10px;"></div>
-                <p class="khula text-muted mb-0" style="font-size: 0.6rem; opacity: 0.7; letter-spacing: 0.1rem; text-transform: uppercase;">
+                <p class="khula text-muted mb-0" style="font-size: 1rem; opacity: 0.7; letter-spacing: .25rem; text-transform: uppercase;">
                     &copy; {{ date('Y') }} Dayunan
                 </p>
             </div>
@@ -21,20 +21,20 @@
                        target="_blank" 
                        class="social-icon" 
                        title="Follow us on Facebook">
-                        <i class="bi bi-facebook"></i>
+                        <i class="bi bi-facebook" style="font-size: 1.5rem;"></i>
                     </a>
                     
                     <a href="https://www.instagram.com/dayunan.bcd?igsh=cm56aDlpMDc1anN3" 
                        target="_blank" 
                        class="social-icon" 
                        title="Follow us on Instagram">
-                        <i class="bi bi-instagram"></i>
+                    <i class="bi bi-instagram" style="font-size: 1.5rem;"></i>
                     </a>
                     
                     <a href="mailto:dayunan.bcd@gmail.com" 
                        class="social-icon" 
                        title="Email Us">
-                        <i class="bi bi-envelope"></i>
+                       <i class="bi bi-envelope" style="font-size: 1.5rem;"></i>
                     </a>
                 </div>
             </div>

@@ -30,7 +30,14 @@ Route::get('/api/blocked-dates/{package?}', [BookingController::class, 'getBlock
 
 Route::get('/manage', [ManageBookingController::class, 'index'])->name('manage');
 
+// Public route - Everyone sees this
 Route::get('/contact', [ContactController::class, 'index'])->name('contact.index');
+
+// Admin Only Routes
+Route::middleware(['auth', 'role'])->group(function () {
+    Route::get('/contact/{contact}/edit', [ContactController::class, 'edit'])->name('contact.edit');
+    Route::put('/contact/{contact}', [ContactController::class, 'update'])->name('contact.update');
+});
 
 // Manage Booking
 Route::get('/manage-booking', [ManageBookingController::class, 'index'])->name('manage.index');

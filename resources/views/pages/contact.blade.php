@@ -33,6 +33,16 @@
                                             <a href="tel:{{ $contact->contact_number }}" class="contact-link text-decoration-none" style="font-size: 0.9rem;">
                                                 <i class="bi bi-telephone me-2 opacity-50"></i>{{ $contact->contact_number }}
                                             </a>
+
+                                            {{-- ADMIN ONLY EDIT BUTTON --}}
+                                            @if(Auth::check() && Auth::user()->role === 'admin')
+                                                <div class="mt-3 pt-2 border-top border-light">
+                                                    <a href="{{ route('contact.edit', $contact->id) }}" class="btn btn-dayunan-outline py-2 w-100" style="font-size: 0.6rem; min-width: auto;">
+                                                        <i class="bi bi-pencil-square me-1"></i> EDIT STAFF
+                                                    </a>
+                                                </div>
+                                            @endif
+
                                         </div>
                                     </div>
                                 </div>
