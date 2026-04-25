@@ -6,7 +6,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
 
-                <div class="search-card p-5 shadow-sm">
+                <div class="search-card p-5 text-center shadow-sm">
                     <span class="khula text-terracotta fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">ADMIN · EDIT BOOKING</span>
                     <h2 class="tenor-sans mb-2 text-jungle">{{ $booking->package->title ?? 'Booking' }}</h2>
                     <p class="cormorant text-muted fst-italic mb-5" style="font-size: 1rem;">
