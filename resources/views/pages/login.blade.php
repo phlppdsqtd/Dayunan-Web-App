@@ -11,7 +11,7 @@
                 
                 <div class="glass-card animate-in">
                     <div class="text-center mb-5">
-                        <span class="text-terracotta khula fw-bold d-block mb-2" style="letter-spacing: 0.5rem; font-size: 0.6rem;">PRIVATE ACCESS</span>
+                        <span class="text-terracotta khula fw-bold d-block mb-2" style="letter-spacing: 0.5rem; font-size: 0.6rem; color: var(--terracotta);">PRIVATE ACCESS</span>
                         <h1 class="tenor-sans mb-3 text-jungle" style="font-size: 1.6rem; letter-spacing: 0.3rem;">Welcome Back</h1>
                         <div class="mx-auto" style="width: 40px; height: 1px; background: var(--sandstorm-beige); opacity: 0.5;"></div>
                     </div>
@@ -25,13 +25,13 @@
                     <form action="{{ url('/login') }}" method="POST">
                         @csrf
                         <div class="input-group-aesthetic mb-4">
-                            <label class="khula">Email Address</label>
+                            <label class="khula fw-bold">Email Address</label>
                             <input type="email" name="email" value="{{ old('email') }}" required placeholder="yourname@email.com">
                             <div class="input-bar"></div>
                         </div>
 
                         <div class="input-group-aesthetic mb-5">
-                            <label class="khula">Password</label>
+                            <label class="khula fw-bold">Password</label>
                             <input type="password" name="password" required placeholder="••••••••">
                             <div class="input-bar"></div>
                         </div>
@@ -44,7 +44,7 @@
                     <div class="text-center mt-5">
                         <p class="khula text-muted small" style="letter-spacing: 0.1rem; font-size: 0.6rem;">
                             New to Dayúnan? 
-                            <a href="{{ url('/signup') }}" class="text-terracotta text-decoration-none fw-bold ms-1">Create Account</a>
+                            <a href="{{ url('/signup') }}" class="text-terracotta text-decoration-none fw-bold ms-1" style="color: var(--terracotta);">Create Account</a>
                         </p>
                     </div>
                 </div>

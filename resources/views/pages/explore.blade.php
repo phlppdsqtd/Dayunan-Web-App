@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="explore-hero py-5">
+<section class="explore-hero">
     <div class="container py-5">
         <div class="text-center mb-5">
-            <span class="khula d-block mb-3" style="color: var(--terracotta);">OUR SPACES</span>
+            <span class="khula d-block mb-3 fw-bold" style="color: var(--terracotta);">OUR SPACES</span>
             <h1 class="mb-3">Explore Dayúnan</h1>
             <p class="mx-auto text-muted" style="max-width: 680px; font-size: 1.15rem;">
                 Find a space to rest, gather, and enjoy slow moments in the city.

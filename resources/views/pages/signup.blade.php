@@ -12,7 +12,7 @@
                 
                 <div class="glass-card animate-in">
                     <div class="text-center mb-5 stagger-1">
-                        <span class="text-terracotta khula fw-bold d-block mb-2" style="letter-spacing: 0.5rem; font-size: 0.6rem;">UNWIND AND SLOW DOWN</span>
+                        <span class="text-terracotta khula fw-bold d-block mb-2" style="letter-spacing: 0.5rem; font-size: 0.6rem; color: var(--terracotta);">UNWIND AND RELAX</span>
                         <h1 class="tenor-sans mb-3 text-jungle" style="font-size: 1.6rem; letter-spacing: 0.3rem;">Create Account</h1>
                         <div class="mx-auto" style="width: 40px; height: 1px; background: var(--sandstorm-beige); opacity: 0.5;"></div>
                     </div>
@@ -27,19 +27,19 @@
                         @csrf
                         
                         <div class="input-group-aesthetic mb-4 stagger-2">
-                            <label class="khula">Full Name</label>
+                            <label class="khula fw-bold">Full Name</label>
                             <input type="text" name="name" value="{{ old('name') }}" required placeholder="Juan Dela Cruz">
                             <div class="input-bar"></div>
                         </div>
 
                         <div class="input-group-aesthetic mb-4 stagger-3">
-                            <label class="khula">Email Address</label>
+                            <label class="khula fw-bold">Email Address</label>
                             <input type="email" name="email" value="{{ old('email') }}" required placeholder="juan@example.com">
                             <div class="input-bar"></div>
                         </div>
 
                         <div class="input-group-aesthetic mb-4">
-                            <label class="khula">Mobile Number</label>
+                            <label class="khula fw-bold">Mobile Number</label>
                             <input type="tel" 
                                 name="mobile"  id="phone" 
                                 required 
@@ -49,13 +49,13 @@
                         </div>
 
                         <div class="input-group-aesthetic mb-4 stagger-5">
-                            <label class="khula">Password</label>
+                            <label class="khula fw-bold">Password</label>
                             <input type="password" name="password" required placeholder="••••••••">
                             <div class="input-bar"></div>
                         </div>
 
                         <div class="input-group-aesthetic mb-5 stagger-6">
-                            <label class="khula">Confirm Password</label>
+                            <label class="khula fw-bold">Confirm Password</label>
                             <input type="password" name="password_confirmation" required placeholder="••••••••">
                             <div class="input-bar"></div>
                         </div>
@@ -68,7 +68,7 @@
                     <div class="text-center mt-5 stagger-8">
                         <p class="khula text-muted small" style="letter-spacing: 0.1rem; font-size: 0.6rem;">
                             Already a member? 
-                            <a href="{{ url('/login') }}" class="text-terracotta text-decoration-none fw-bold ms-1 link-underline">Login here</a>
+                            <a href="{{ url('/login') }}" class="text-terracotta text-decoration-none fw-bold ms-1 link-underline" style="color: var(--terracotta);">Login here</a>
                         </p>
                     </div>
                 </div>

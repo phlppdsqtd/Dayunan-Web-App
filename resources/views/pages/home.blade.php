@@ -92,7 +92,7 @@
 
         <div class="col-lg-4 offset-lg-1">
     <div class="gallery-story">
-        <span class="text-terracotta khula fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 1rem;">
+        <span class="text-terracotta khula d-block mb-3" style="letter-spacing: 0.4rem; font-size: 1rem;">
     THE EXPERIENCE
 </span>
 
