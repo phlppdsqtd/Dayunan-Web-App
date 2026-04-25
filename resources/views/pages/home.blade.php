@@ -97,7 +97,7 @@
 </span>
 
         <h2 class="tenor-sans mb-4" style="color: #3A5F41; font-size: 2.8rem; line-height: 1.1;">
-            A Place to Pause and Breathe.
+            A Place to Pause and Breathe
         </h2>
         
         <div class="phrase-list mt-5">
