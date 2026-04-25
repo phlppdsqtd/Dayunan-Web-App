@@ -6,16 +6,16 @@
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
 
-                <div class="search-card p-5 text-center shadow-sm">
-                    <span class="khula text-terracotta fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">ADMIN · EDIT BOOKING</span>
-                    <h2 class="tenor-sans mb-2 text-jungle">{{ $booking->package->title ?? 'Booking' }}</h2>
-                    <p class="cormorant text-muted fst-italic mb-5" style="font-size: 1rem;">
+                <div class="search-card p-5 shadow-sm">
+                    <span class="khula text-terracotta fw-bold d-block mb-3 text-center" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">ADMIN · EDIT BOOKING</span>
+                    <h2 class="tenor-sans mb-2 text-jungle text-center" style="font-size: 1.5rem;">{{ $booking->package->title ?? 'Booking' }}</h2>
+                    <p class="cormorant text-muted fst-italic mb-5 text-center" style="font-size: 1rem;">
                         REF #{{ $booking->id }}
                     </p>
 
                     {{-- STATUS BUTTONS --}}
                     <div class="mb-5">
-                        <label class="khula text-muted d-block mb-3" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHANGE STATUS</label>
+                        <label class="khula fw-bold d-block mb-3" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHANGE STATUS</label>
                         <div class="d-flex gap-2">
                             <form action="{{ route('manage.status', $booking) }}" method="POST" style="flex:1;">
                                 @csrf
@@ -57,7 +57,7 @@
                         @endif
 
                         <div class="mb-4">
-                            <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-IN DATE</label>
+                            <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-IN DATE</label>
                             <input type="text" id="admin_check_in" name="check_in"
                                    class="form-control aesthetic-input py-3"
                                    value="{{ \Carbon\Carbon::parse($booking->check_in)->format('Y-m-d') }}" required>
@@ -67,7 +67,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-OUT DATE</label>
+                            <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">CHECK-OUT DATE</label>
                             <div class="dropdown w-100">
                                 <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start aesthetic-input py-3"
                                         type="button"
@@ -92,21 +92,21 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST NAME</label>
+                            <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST NAME</label>
                             <input type="text" name="guest_name"
                                    class="form-control aesthetic-input py-3"
                                    value="{{ $booking->user?->name ?? $booking->guest_name ?? '' }}">
                         </div>
 
                         <div class="mb-4">
-                            <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST EMAIL</label>
+                            <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST EMAIL</label>
                             <input type="email" name="guest_email"
                                    class="form-control aesthetic-input py-3"
                                    value="{{ $booking->user?->email ?? $booking->guest_email ?? '' }}">
                         </div>
 
                         <div class="mb-5">
-                            <label class="khula text-muted d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST PHONE</label>
+                            <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST PHONE</label>
                             <input type="text" name="guest_phone"
                                    class="form-control aesthetic-input py-3"
                                    value="{{ $booking->user?->mobile ?? $booking->guest_phone ?? '' }}">
@@ -116,7 +116,7 @@
                             Save Changes
                         </button>
 
-                        <a href="{{ route('manage.index') }}" class="d-block mt-4 khula text-muted text-decoration-none text-center" style="font-size: 0.65rem; letter-spacing: 0.15rem;">
+                        <a href="{{ route('manage.index') }}" class="d-block mt-4 khula fw-bold text-decoration-none text-center" style="font-size: 0.65rem; letter-spacing: 0.15rem; color: var(--terracotta);">
                             BACK TO BOOKINGS
                         </a>
                     </form>
