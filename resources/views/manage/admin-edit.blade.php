@@ -116,7 +116,7 @@
                             Save Changes
                         </button>
 
-                        <a href="{{ route('manage.index') }}" class="d-block mt-4 khula fw-bold text-decoration-none text-center" style="font-size: 0.65rem; letter-spacing: 0.15rem; color: var(--terracotta);">
+                        <a href="{{ route('manage.index') }}" class="d-block mt-4 khula text-muted text-decoration-none text-center" style="font-size: 0.65rem; letter-spacing: 0.15rem;">
                             BACK TO BOOKINGS
                         </a>
                     </form>
