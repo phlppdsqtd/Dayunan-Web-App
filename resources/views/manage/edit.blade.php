@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-5">
                 <div class="search-card p-5 text-center shadow-sm">
-                    <span class="khula text-terracotta d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem;">EDIT BOOKING</span>
+                    <span class="khula text-terracotta fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">EDIT BOOKING</span>
                     <h2 class="tenor-sans mb-2 text-jungle">Adjust your stay</h2>
                     <p class="cormorant text-muted fst-italic mb-5" style="font-size: 1rem;">REF #{{ $booking->id }} &middot; {{ $booking->package->title ?? 'Package' }}</p>
 

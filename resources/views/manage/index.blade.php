@@ -7,8 +7,8 @@
             <div class="col-md-8 col-lg-5">
                 
                 <div class="search-card p-5 text-center shadow-sm">
-                    <span class="khula text-terracotta d-block mb-3 animate-fade-in" style="letter-spacing: 0.4rem; font-size: 0.7rem;">RETRIEVE BOOKING</span>
-                    <h2 class="tenor-sans mb-5 text-jungle animate-slide-up">Manage your stay.</h2>
+                    <span class="khula text-terracotta fw-bold d-block mb-3 animate-fade-in" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">RETRIEVE BOOKING</span>
+                    <h2 class="tenor-sans mb-5 text-jungle animate-slide-up">Manage your stay</h2>
                     
                     <form action="{{ route('manage.search') }}" method="POST" class="mt-4 px-lg-4">
                         @csrf

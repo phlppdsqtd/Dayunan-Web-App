@@ -92,12 +92,12 @@
 
         <div class="col-lg-4 offset-lg-1">
     <div class="gallery-story">
-        <span class="text-terracotta khula fw-bold d-block mb-3" style="letter-spacing: 0.4rem; font-size: 1rem;">
+        <span class="text-terracotta khula d-block mb-3" style="letter-spacing: 0.4rem; font-size: 1rem;">
     THE EXPERIENCE
 </span>
 
         <h2 class="tenor-sans mb-4" style="color: #3A5F41; font-size: 2.8rem; line-height: 1.1;">
-            A Place to Pause and Breathe.
+            A Place to Pause and Breathe
         </h2>
         
         <div class="phrase-list mt-5">

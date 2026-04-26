@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="contact-page-wrapper d-flex align-items-center justify-content-center py-5">
+<div class="contact-page-wrapper d-flex align-items-center justify-content-center">
     <div class="container py-lg-5">
         <div class="row justify-content-center">
             <div class="col-md-11 col-lg-8">
@@ -9,8 +9,8 @@
                 <div class="contact-card p-5 text-center shadow-lg animate-fade-up">
                     
                     <section class="mb-5">
-                        <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem;">CONNECT</span>
-                        <h2 class="tenor-sans text-jungle display-5 mb-0">Let's plan your stay.</h2>
+                        <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">CONNECT</span>
+                        <h2 class="tenor-sans text-jungle display-5 mb-0">Let's plan your stay</h2>
                         <div class="mx-auto mt-4 accent-line"></div>
 
                         @if(Auth::check() && Auth::user()->role === 'admin')
@@ -44,12 +44,12 @@
 
                                             @if(Auth::check() && Auth::user()->role === 'admin')
                                                 <div class="mt-3 pt-2 border-top border-light d-flex gap-2">
-                                                    <a href="{{ route('contact.edit', $contact->id) }}" class="btn btn-dayunan-outline py-2 flex-grow-1" style="font-size: 0.6rem; min-width: auto;">
+                                                    <a href="{{ route('contact.edit', $contact->id) }}" class="btn btn-dayunan-outline py-2 flex-grow-1 fw-bold" style="font-size: 0.8rem; min-width: auto;">
                                                         EDIT
                                                     </a>
                                                     <form action="{{ route('contact.destroy', $contact->id) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Delete this staff member?')">
                                                         @csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-outline-danger py-2 w-100" style="font-size: 0.6rem; border-radius: 0; border: 1px solid #dc3545;">
+                                                        <button type="submit" class="btn btn-outline-danger py-2 w-100 fw-bold" style="font-size: 0.8rem; border-radius: 0; border: 1px solid #dc3545;">
                                                             DELETE
                                                         </button>
                                                     </form>

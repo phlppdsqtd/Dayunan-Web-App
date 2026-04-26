@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="text-center mb-5">
-                <span class="khula d-block mb-3" style="color: var(--terracotta);">BOOK NOW</span>
+                <span class="khula d-block mb-3 fw-bold" style="color: var(--terracotta);">BOOK NOW</span>
                 <h1 class="mb-3">Reserve Your Stay</h1>
                 <p class="mx-auto text-muted" style="max-width: 600px; font-size: 1.1rem;">
                     Select your preferred accommodation and dates to secure your booking at Dayúnan.

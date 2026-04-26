@@ -9,7 +9,7 @@
                 <div class="contact-card p-5 shadow-lg animate-fade-up text-center">
 
                     <section class="mb-5">
-                        <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem;">
+                        <span class="khula fw-bold text-terracotta mb-2 d-block animate-letter-spacing" style="letter-spacing: 0.4rem; font-size: 0.7rem; color: var(--terracotta);">
                             @auth
                                 @if(auth()->user()->role === 'admin')
                                     ALL SYSTEM BOOKINGS

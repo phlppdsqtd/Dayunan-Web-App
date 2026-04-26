@@ -42,8 +42,12 @@
                         <label class="khula fw-bold small">EMAIL ADDRESS</label>
                         <input type="email" name="email" class="form-control rounded-0 border-dark-subtle shadow-none" value="{{ old('email') }}" required>
                     </div>
+<<<<<<< HEAD
 
                     <button type="submit" class="btn btn-dayunan-outline w-100 py-3 mt-3">CREATE STAFF</button>
+=======
+                    <button type="submit" class="btn btn-dayunan w-100 py-3 mt-3">CREATE STAFF</button>
+>>>>>>> 9d1e214bcff5729b9dabc833c4576948133b9c18
                 </form>
             </div>
         </div>
