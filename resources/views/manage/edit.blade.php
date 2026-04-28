@@ -111,47 +111,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const dropdownButton = document.getElementById('stayLengthDropdown');
         const optionsContainer = document.getElementById('stayLengthOptions');
 
-        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
-        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
-
-        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr) + 1) : 7;
-        const maxDays = maxN;
-
         optionsContainer.innerHTML = '';
 
-        if (maxDays < 1) {
-            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
-            dropdownButton.textContent = 'No available dates';
-            document.getElementById('check_out_hidden').value = '';
-            updateSaveBtn();
-            return;
-        }
+        let hasAnyOptions = false;
+        let dayCounter = 1;
 
-        for (let i = 1; i <= maxDays; i++) {
-            const parts = checkInStr.split('-');
-            const checkoutDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + i);
-            const checkoutStr = checkoutDate.getFullYear() + '-' +
-                String(checkoutDate.getMonth()+1).padStart(2,'0') + '-' +
-                String(checkoutDate.getDate()).padStart(2,'0');
-            const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
-            
+        for (let i = 1; i <= 7; i++) {
+            const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
+            const checkoutStr = checkoutDate.toISOString().slice(0,10);
+
+            if (checkoutStr === checkInStr) continue;
+            if (checkOverlap(checkInStr, checkoutStr)) continue;
+
+            hasAnyOptions = true;
+            const label = `${dayCounter} ${dayCounter === 1 ? 'day' : 'days'} (${checkoutStr})`;
+            dayCounter++;
+
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.className = 'dropdown-item';
             a.href = '#';
             a.textContent = label;
             a.setAttribute('data-checkout-date', checkoutStr);
-            a.setAttribute('data-days', i);
+            a.setAttribute('data-days', dayCounter - 1);
 
             a.addEventListener('click', function(e) {
                 e.preventDefault();
                 const selectedDate = this.getAttribute('data-checkout-date');
                 const selectedDays = this.getAttribute('data-days');
-
-                if (checkOverlap(checkInStr, selectedDate)) {
-                    document.getElementById('overlap-warning').style.display = 'block';
-                    return;
-                }
 
                 document.getElementById('overlap-warning').style.display = 'none';
                 document.getElementById('check_out_hidden').value = selectedDate;
@@ -165,6 +152,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             li.appendChild(a);
             optionsContainer.appendChild(li);
+        }
+
+        if (!hasAnyOptions) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.textContent = 'No available dates';
+            document.getElementById('check_out_hidden').value = '';
+            updateSaveBtn();
         }
     }
 

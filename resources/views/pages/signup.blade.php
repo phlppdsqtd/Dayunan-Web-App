@@ -28,8 +28,9 @@
                         
                         <div class="input-group-aesthetic mb-4 stagger-2">
                             <label class="khula fw-bold">Full Name</label>
-                            <input type="text" name="name" value="{{ old('name') }}" required placeholder="Juan Dela Cruz">
+                            <input type="text" name="name" id="fullname" value="{{ old('name') }}" required placeholder="Juan Dela Cruz" maxlength="50">
                             <div class="input-bar"></div>
+                            <small class="input-guide">Letters, spaces, hyphens, and apostrophes only.</small>
                         </div>
 
                         <div class="input-group-aesthetic mb-4 stagger-3">
@@ -38,14 +39,11 @@
                             <div class="input-bar"></div>
                         </div>
 
-                        <div class="input-group-aesthetic mb-4">
+                        <div class="input-group-aesthetic mb-4 stagger-4">
                             <label class="khula fw-bold">Mobile Number</label>
-                            <input type="tel" 
-                                name="mobile"  id="phone" 
-                                required 
-                                placeholder="09123456789" 
-                                maxlength="11">
+                            <input type="tel" name="mobile" id="phone" required placeholder="09123456789" maxlength="13">
                             <div class="input-bar"></div>
+                            <small class="input-guide">Formats: 09171234567 or 02-1234567</small>
                         </div>
 
                         <div class="input-group-aesthetic mb-4 stagger-5">
@@ -224,14 +222,83 @@
         transition: width 0.3s ease;
     }
     .link-underline:hover::after { width: 100%; }
+
+    /* Hide the guide by default */
+    .input-guide {
+        display: block;
+        font-size: .8rem;
+        color: var(--soft-bronze);
+        letter-spacing: 0.05rem;
+        margin-top: 5px;
+        opacity: 0; /* Invisible */
+        transform: translateY(-5px); /* Slightly moved up */
+        transition: all 0.3s ease; /* Smooth fade and slide */
+        pointer-events: none; /* Prevents it from interfering with clicks */
+    }
+
+    /* Show the guide when hovering over the container or focusing the input */
+    .input-group-aesthetic:hover .input-guide,
+    .input-group-aesthetic input:focus ~ .input-guide {
+        opacity: 1;
+        transform: translateY(0);
+    }
 </style>
 
 <script>
-    // Enforce only digits in the phone field
-    document.getElementById('phone').addEventListener('keypress', function(e) {
-        if (e.which < 48 || e.which > 57) {
-            e.preventDefault();
-        }
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    const fullname = document.getElementById('fullname');
+    const phone = document.getElementById('phone');
+
+    // --- FULL NAME RESTRICTIONS ---
+    if (fullname) {
+        fullname.addEventListener('input', function() {
+            // 1. Remove numbers or special characters (allow letters, spaces, hyphens, apostrophes, and ñ)
+            this.value = this.value.replace(/[^A-Za-z\u00f1\u00d1\s\-']/g, '');
+            
+            // 2. Auto-capitalize first letter of each word
+            this.value = this.value.replace(/\b\w/g, char => char.toUpperCase());
+            
+            // 3. Validation Rules
+            const words = this.value.trim().split(/\s+/);
+            if (words.length < 2 && this.value.length > 0) {
+                this.setCustomValidity('Please enter both first and last name');
+            } else if (this.value.length < 2 && this.value.length > 0) {
+                this.setCustomValidity('Name must be at least 2 characters');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+
+    // --- PHONE NUMBER RESTRICTIONS ---
+    if (phone) {
+        phone.addEventListener('input', function() {
+            // 1. Remove non-numeric characters except hyphen
+            let cleaned = this.value.replace(/[^0-9-]/g, '');
+            
+            // 2. Auto-format logic for landlines
+            if (cleaned.length > 2 && cleaned.length <= 7 && !cleaned.includes('-') && !cleaned.startsWith('09') && !cleaned.startsWith('63')) {
+                // Auto-add hyphen for 2-digit area code (e.g., 02-1234567)
+                this.value = cleaned.slice(0, 2) + '-' + cleaned.slice(2);
+            } else if (cleaned.length > 7 && cleaned.length <= 10 && !cleaned.includes('-') && !cleaned.startsWith('09') && !cleaned.startsWith('63')) {
+                // Auto-add hyphen for 3-digit area code (e.g., 032-1234567)
+                this.value = cleaned.slice(0, 3) + '-' + cleaned.slice(3);
+            } else {
+                this.value = cleaned;
+            }
+            
+            // 3. Validate Philippine pattern
+            const phonePattern = /^(09[0-9]{9}|639[0-9]{9}|[0-9]{2,3}-[0-9]{6,7}|[0-9]{10,13})$/;
+            
+            if (this.value.length > 0 && !phonePattern.test(this.value)) {
+                this.setCustomValidity('Enter a valid Philippine number (e.g., 09171234567 or 02-1234567)');
+            } else if (this.value.length < 10 && this.value.length > 0) {
+                this.setCustomValidity('Phone number is too short');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+});
 </script>
 @endsection

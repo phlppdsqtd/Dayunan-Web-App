@@ -153,9 +153,9 @@ class ManageBookingController extends Controller
         $request->validate([
             'check_in'    => 'required|date',
             'check_out'   => 'required|date|after:check_in',
-            'guest_name'  => 'nullable|string|max:255',
+            'guest_name'  => 'nullable|string|max:100|regex:/^[A-Za-z\s]+$/',
             'guest_email' => 'nullable|email|max:255',
-            'guest_phone' => 'nullable|string|max:20',
+            'guest_phone' => 'nullable|string|max:20|regex:/^[0-9+\-\s]+$/',
         ]);
 
         $checkIn = Carbon::parse($request->check_in)->startOfDay();

@@ -95,7 +95,10 @@
                             <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST NAME</label>
                             <input type="text" name="guest_name"
                                    class="form-control aesthetic-input py-3"
-                                   value="{{ $booking->user?->name ?? $booking->guest_name ?? '' }}">
+                                   value="{{ $booking->user?->name ?? $booking->guest_name ?? '' }}"
+                                   placeholder="Enter full name (e.g., Maria Santos)"
+                                   maxlength="50">
+                            <small class="text-muted d-block mt-1" style="font-size: 0.9rem;">Letters, spaces, hyphens, and apostrophes only (2-50 characters)</small>
                         </div>
 
                         <div class="mb-4">
@@ -107,9 +110,12 @@
 
                         <div class="mb-5">
                             <label class="khula fw-bold d-block mb-2" style="font-size: 0.6rem; letter-spacing: 0.2rem;">GUEST PHONE</label>
-                            <input type="text" name="guest_phone"
+                            <input type="text" name="guest_phone" id="guest_phone"
                                    class="form-control aesthetic-input py-3"
-                                   value="{{ $booking->user?->mobile ?? $booking->guest_phone ?? '' }}">
+                                   value="{{ $booking->user?->mobile ?? $booking->guest_phone ?? '' }}"
+                                   placeholder="09171234567 or 02-1234567"
+                                   maxlength="13">
+                            <small class="text-muted d-block mt-1" style="font-size: 0.9rem;">Philippine format: 09171234567, 639171234567, or 02-1234567</small>
                         </div>
 
                         <button type="submit" id="save-btn" class="btn btn-dayunan w-100 py-3 tenor-sans" style="letter-spacing: 0.2rem;">
@@ -162,40 +168,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function daysBetween(start, end) {
-        const s = new Date(start + 'T00:00:00');
-        const e = new Date(end + 'T00:00:00');
-        return Math.floor((e - s) / (1000 * 60 * 60 * 24));
-    }
-
     function generateCheckOutDropdown(checkInStr) {
         const dropdownButton = document.getElementById('stayLengthDropdown');
         const optionsContainer = document.getElementById('stayLengthOptions');
 
         if (!checkInStr) return;
 
-        const futureBlocked = blockedDates.filter(range => range.to >= checkInStr).sort((a,b) => a.from.localeCompare(b.from));
-        const capStr = futureBlocked.length > 0 ? futureBlocked[0].from : null;
-        const maxN = capStr ? Math.min(7, daysBetween(checkInStr, capStr) + 1) : 7;
-        const maxDays = maxN;
-
         optionsContainer.innerHTML = '';
 
-        if (maxDays < 1) {
-            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
-            dropdownButton.textContent = 'No available dates';
-            document.getElementById('check_out_hidden').value = '';
-            updateSaveBtn();
-            return;
-        }
+        let hasAnyOptions = false;
+        let dayCounter = 1;
 
-        for (let i = 1; i <= maxDays; i++) {
-            const parts = checkInStr.split('-');
-            const checkoutDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]) + i);
-            const checkoutStr = checkoutDate.getFullYear() + '-' +
-                String(checkoutDate.getMonth()+1).padStart(2,'0') + '-' +
-                String(checkoutDate.getDate()).padStart(2,'0');
-            const label = `${i} ${i === 1 ? 'day' : 'days'} (${checkoutStr})`;
+        for (let i = 1; i <= 7; i++) {
+            const checkoutDate = new Date(new Date(checkInStr + 'T00:00:00').getTime() + i * 24*60*60*1000);
+            const checkoutStr = checkoutDate.toISOString().slice(0,10);
+
+            if (checkoutStr === checkInStr) continue;
+            if (checkOverlap(checkInStr, checkoutStr)) continue;
+
+            hasAnyOptions = true;
+            const label = `${dayCounter} ${dayCounter === 1 ? 'day' : 'days'} (${checkoutStr})`;
+            dayCounter++;
 
             const li = document.createElement('li');
             const a = document.createElement('a');
@@ -203,19 +196,12 @@ document.addEventListener('DOMContentLoaded', function() {
             a.href = '#';
             a.textContent = label;
             a.setAttribute('data-checkout-date', checkoutStr);
-            a.setAttribute('data-days', i);
+            a.setAttribute('data-days', dayCounter - 1);
 
             a.addEventListener('click', function(e) {
                 e.preventDefault();
                 const selectedDate = this.getAttribute('data-checkout-date');
                 const selectedDays = this.getAttribute('data-days');
-
-                if (checkOverlap(checkInStr, selectedDate)) {
-                    document.getElementById('overlap-warning').style.display = 'block';
-                    document.getElementById('check_out_hidden').value = '';
-                    updateSaveBtn();
-                    return;
-                }
 
                 document.getElementById('overlap-warning').style.display = 'none';
                 document.getElementById('check_out_hidden').value = selectedDate;
@@ -229,6 +215,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             li.appendChild(a);
             optionsContainer.appendChild(li);
+        }
+
+        if (!hasAnyOptions) {
+            optionsContainer.innerHTML = '<li><a class="dropdown-item disabled" href="#">No available dates</a></li>';
+            dropdownButton.textContent = 'No available dates';
+            document.getElementById('check_out_hidden').value = '';
         }
     }
 
@@ -246,6 +238,23 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.style.opacity = '0.5';
             saveBtn.style.cursor = 'not-allowed';
         }
+    }
+
+    const guestName = document.querySelector('input[name="guest_name"]');
+    const guestPhone = document.getElementById('guest_phone');
+
+    if (guestName) {
+        guestName.addEventListener('input', function() {
+            this.value = this.value.replace(/[^A-Za-z\u00f1\u00d1\s\-']/g, '');
+            this.value = this.value.replace(/\b\w/g, char => char.toUpperCase());
+        });
+    }
+
+    if (guestPhone) {
+        guestPhone.addEventListener('input', function() {
+            let cleaned = this.value.replace(/[^0-9-]/g, '');
+            this.value = cleaned;
+        });
     }
 
     fetch(`{{ route("api.blocked-dates") }}`)
@@ -280,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Generate dropdown for existing check-in
             generateCheckOutDropdown("{{ \Carbon\Carbon::parse($booking->check_in)->format('Y-m-d') }}");
             updateSaveBtn();
         });
