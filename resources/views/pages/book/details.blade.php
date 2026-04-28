@@ -61,18 +61,25 @@
                                 @if($package->amenities)
                                     <div class="mb-4">
                                         <h6 class="text-terracotta mb-3">Amenities</h6>
-                                        <p class="text-muted mb-0">{{ $package->amenities }}</p>
+                                        <ul class="text-muted mb-0" style="padding-left: 1.2rem;">
+                                            @php
+                                                $amenitiesList = array_map('trim', explode(',', $package->amenities));
+                                            @endphp
+                                            @foreach($amenitiesList as $amenity)
+                                                <li style="margin-bottom: 0.25rem;">{{ $amenity }}</li>
+                                            @endforeach
+                                        </ul>
                                     </div>
                                 @endif
-                                <div class="row text-center">
+                                <div class="row">
                                     <div class="col-6">
-                                        <div class="border-end border-light">
+                                        <div class="text-start">
                                             <div class="text-muted small mb-1">Max Guests</div>
                                             <div class="h4 mb-0">{{ $package->max_guests ?? 'N/A' }}</div>
                                         </div>
                                     </div>
                                     <div class="col-6">
-                                        <div>
+                                        <div class="text-start">
                                             <div class="text-muted small mb-1">Price</div>
                                             <div class="h3 text-terracotta mb-0">₱{{ number_format($package->price, 2) }} <small class="text-muted">/day</small></div>
                                         </div>
@@ -132,11 +139,21 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="guest_name" class="form-label fw-semibold text-terracotta mb-2">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_name" name="guest_name" placeholder="Enter full name" required>
+                                <input type="text" class="form-control form-control-lg border-terracotta shadow-sm" 
+                                       id="guest_name" name="guest_name" 
+                                       placeholder="Enter full name (e.g., Maria Santos)"
+                                       maxlength="50"
+                                       required>
+                                <small class="text-muted d-block mt-1">Letters, spaces, hyphens, and apostrophes only (2-50 characters)</small>
                             </div>
                             <div class="col-md-6">
                                 <label for="guest_phone" class="form-label fw-semibold text-terracotta mb-2">Phone Number <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control form-control-lg border-terracotta shadow-sm" id="guest_phone" name="guest_phone" placeholder="+63 123 465 789" required>
+                                <input type="tel" class="form-control form-control-lg border-terracotta shadow-sm" 
+                                       id="guest_phone" name="guest_phone" 
+                                       placeholder="09171234567 or 02-1234567"
+                                       maxlength="13"
+                                       required>
+                                <small class="text-muted d-block mt-1">Philippine format: 09171234567, 639171234567, or 02-1234567</small>
                             </div>
                             <div class="col-md-6">
                                 <label for="guest_email" class="form-label fw-semibold text-terracotta mb-2">Email Address <span class="text-danger">*</span></label>
@@ -325,6 +342,76 @@ document.addEventListener('DOMContentLoaded', function() {
     const guestConfirmEmail = document.getElementById('guest_confirm_email');
     const guestPhone = document.getElementById('guest_phone');
 
+    // Additional validation for name and phone
+    if (guestName) {
+        guestName.addEventListener('input', function() {
+            // Remove any numbers or special characters (allow letters, spaces, hyphens, apostrophes, and ñ)
+            this.value = this.value.replace(/[^A-Za-z\u00f1\u00d1\s\-']/g, '');
+            
+            // Capitalize first letter of each word
+            this.value = this.value.replace(/\b\w/g, char => char.toUpperCase());
+            
+            // Check for at least two words
+            const words = this.value.trim().split(/\s+/);
+            if (words.length < 2 && this.value.length > 0) {
+                this.setCustomValidity('Please enter both first and last name');
+            } else if (this.value.length < 2 && this.value.length > 0) {
+                this.setCustomValidity('Name must be at least 2 characters');
+            } else if (this.value.length > 50) {
+                this.setCustomValidity('Name cannot exceed 50 characters');
+            } else {
+                this.setCustomValidity('');
+            }
+            
+            validateForm();
+        });
+    }
+
+    if (guestPhone) {
+        guestPhone.addEventListener('input', function() {
+            // Remove all non-numeric characters except hyphen
+            let cleaned = this.value.replace(/[^0-9-]/g, '');
+            
+            // Auto-format for landline (add hyphen after area code)
+            if (cleaned.length === 2 && !cleaned.includes('-')) {
+                // Don't add hyphen yet, wait for more digits
+                this.value = cleaned;
+            } else if (cleaned.length > 2 && cleaned.length <= 7 && !cleaned.includes('-') && !cleaned.startsWith('09') && !cleaned.startsWith('63')) {
+                // Auto-add hyphen for landline (e.g., 021234567 -> 02-1234567)
+                if (cleaned.length >= 2) {
+                    this.value = cleaned.slice(0, 2) + '-' + cleaned.slice(2);
+                } else {
+                    this.value = cleaned;
+                }
+            } else if (cleaned.length > 7 && cleaned.length <= 10 && !cleaned.includes('-') && !cleaned.startsWith('09') && !cleaned.startsWith('63')) {
+                // Auto-add hyphen for 3-digit area code (e.g., 0321234567 -> 032-1234567)
+                if (cleaned.length >= 3) {
+                    this.value = cleaned.slice(0, 3) + '-' + cleaned.slice(3);
+                } else {
+                    this.value = cleaned;
+                }
+            } else {
+                this.value = cleaned;
+            }
+            
+            // Validate Philippine number pattern
+            // Patterns: 09171234567, 639171234567, 02-1234567, 032-1234567
+            const phonePattern = /^(09[0-9]{9}|639[0-9]{9}|[0-9]{2,3}-[0-9]{6,7}|[0-9]{10,13})$/;
+            
+            if (this.value.length > 0 && !phonePattern.test(this.value)) {
+                this.setCustomValidity('Enter a valid Philippine number (e.g., 09171234567, 639171234567, or 02-1234567)');
+            } else if (this.value.length < 10 && this.value.length > 0) {
+                this.setCustomValidity('Phone number must be at least 10 digits');
+            } else if (this.value.length > 13) {
+                this.setCustomValidity('Phone number cannot exceed 13 digits');
+            } else {
+                this.setCustomValidity('');
+            }
+            
+            validateForm();
+        });
+    }
+
     function validateForm() {
         let isValid = true;
         
@@ -349,6 +436,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (guestName && !guestName.value.trim()) { 
             guestName.classList.add('is-invalid'); 
             isValid = false; 
+        } else if (guestName && guestName.value.trim().split(/\s+/).length < 2 && guestName.value.trim().length > 0) {
+            guestName.classList.add('is-invalid');
+            isValid = false;
         }
         
         if (guestEmail) {
@@ -375,6 +465,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (guestPhone && !guestPhone.value.trim()) { 
             guestPhone.classList.add('is-invalid'); 
             isValid = false; 
+        } else if (guestPhone && guestPhone.value.length > 0 && guestPhone.value.length < 10) {
+            guestPhone.classList.add('is-invalid');
+            isValid = false;
+        } else if (guestPhone && guestPhone.value.length > 13) {
+            guestPhone.classList.add('is-invalid');
+            isValid = false;
         }
         
         const submitBtn = document.getElementById('submit-booking');
